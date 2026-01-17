@@ -1,0 +1,12 @@
+import { HTMLx } from "ucbuilder/out/lib/WrapperHelper.js";
+import ucWinFrame$dynamic from "ucbuilder/out/renderer/controls/ucWinFrame.uc.html.js";
+export default HTMLx.Design({
+    dynamicFilePath: import.meta.url,
+    htmlSource() {
+        return HTMLx.Wrapper({ "x-caption": 'Form1' },
+            HTMLx.Usercontrol('winFrame1', ucWinFrame$dynamic, import.meta.url, {},
+                HTMLx.Tag('div', {}, 'Hello. There')
+            )
+        )
+    },
+})

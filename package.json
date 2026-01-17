@@ -1,0 +1,30 @@
+{
+  "name": "ucbuilder-devtools",
+  "version": "1.0.0-bata-0",
+  "description": "project builder for ucbuilder",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "clean": "rimraf out",
+    "start": "electron .",
+    "build:dts": "tsc --emitDeclarationOnly",
+    "build": "tsc",
+    "rebuild": "npm run clean && npm run build && npm run build:dts",
+    "rebuild:start": "npm run rebuild && npm run start"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "electron": "^39.1.1",
+    "rimraf": "^6.0.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3",     
+    "@types/ucbuilder": "file:../ucbuilder/ucbuilder-3.0.0-beta.0.tgz"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3"
+  },
+  "peerDependencies": {
+  }
+}

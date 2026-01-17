@@ -1,0 +1,107 @@
+<?php let designer = sources.ts_uc.designer; ?>
+<?php for(let i=0;i<designer.importer.classes.length;i++){ let $rw=designer.importer.classes[i]; 
+?>import { <?= $rw.names.map(s=>s.asText).join(',') ?> } from "<?=$rw.url?>";
+<?php } ?>
+<?php if(designer.dynamicName!=undefined){ ?>
+import <?= designer.dynamicName ?> from "<?= designer.dynamicFilePath ?>";   
+<?php } ?>
+
+const FILE_PATH = '<?=designer.htmlFilePath?>';  
+export class <?=designer.className ?> extends <?= designer.baseClassName ?> {    
+    public static get FILE_PATH() {
+        return FILE_PATH;
+    }
+    public static get AbsolutePath() {
+        return import.meta.url;//Usercontrol.Resolver(import.meta.url, this.FILE_PATH);
+    }
+     
+    static setCSS_globalVar (varList:VariableList): void  {
+        intenseGenerator.setCSS_globalVar(varList,this.FILE_PATH);
+    }   
+    static Create(pera: IUcOptions, ...args: any[]): <?=src.name ?> {  
+        return intenseGenerator.generateUC(this.FILE_PATH,<?=src.name?>,import.meta.url,pera,...args) as <?=src.name?>;
+    }
+    static async CreateAsync(pera: IUcOptions, ...args: any[]): Promise<<?=src.name ?>> {
+        return (await intenseGenerator.generateUCAsync( this.FILE_PATH, <?=src.name ?>, import.meta.url, pera, ...args)) as <?=src.name ?>;
+    }
+    get(id:<?=designer.getterFunk ?>) {
+        return this.ucExtends.find(`[id="${id}"]`)[0];
+    }
+
+    <?php 
+    for(let i=0;i<designer.controls.length;i++){  let $rw=designer.controls[i];
+        switch($rw.type){ 
+            case "none": ?>
+            <?=$rw.scope?>&nbsp;<?=$rw.nameQT?>: <?=$rw.proto?><?=$rw.generic?>;
+    <?php   break;
+            case ".tpt": ?>
+            <?=$rw.scope?>&nbsp;<?=$rw.nameQT?>: import('<?=$rw.codeFilePath?>').<?=$rw.src.name?>;
+    <?php   break;
+            case ".uc": ?>
+            <?=$rw.scope?>&nbsp;<?=$rw.nameQT?>: import('<?=$rw.codeFilePath?>').<?=$rw.src.name?>;
+    <?php   break; 
+        }
+    } ?>
+    
+    constructor(){ super(); }
+
+    async initializecomponentAsync(args: IUcOptions, form: <?=src.name?>) {
+        let ucExt = this.ucExtends;
+        <?php if(designer.dynamicName!=undefined){ ?>
+        args.source.htmlContents = args?.source?.htmlContents ?? <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
+        <?php } ?>
+        ucExt.initializecomponent(args);                
+        let CONTROLS = ucExt.controls;
+        
+        await Usercontrol.GenerateControls(this,args,args.cfInfo.pathOf.code);
+        
+        if(args.events?.beforeFinalize!=undefined) args.events?.beforeFinalize(form);
+        await ucExt.finalizeInitAsync(args);
+                
+        delete this.initializecomponent; 
+        delete this.initializecomponentAsync; 
+        delete ucExt.initializecomponent;
+        delete ucExt.finalizeInit;
+        delete ucExt.finalizeInitAsync;
+    }
+
+    initializecomponent(args: IUcOptions, form: <?=src.name?>) {        
+        let ucExt = this.ucExtends;
+        <?php if(designer.dynamicName!=undefined){ ?>
+        args.source.htmlContents = args?.source?.htmlContents ?? <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
+        <?php } ?>
+        ucExt.initializecomponent(args);          
+        let CONTROLS = ucExt.controls;
+        <?php 
+        for(let i=0;i<designer.controls.length;i++){  let $rw=designer.controls[i];
+            switch($rw.type){ ?>
+                <?php case "none": ?>
+        this<?=$rw.nameThis?> = CONTROLS<?=$rw.nameThis?>  as unknown as <?=$rw.proto?>;<?php   break; ?>
+                <?php case ".tpt": ?>
+        this<?=$rw.nameThis ?> = <?=$rw.importedClassName?>.Create({ 
+            parentUc: this, 
+            accessName:"<?=$rw.name?>" , 
+            elementHT :CONTROLS<?=$rw.nameThis?> as any
+        });<?php   break; ?>
+                <?php case ".uc": ?>
+        this<?=$rw.nameThis?> = <?=$rw.importedClassName?>.Create({ 
+                parentUc : this, 
+                mode:args.mode,
+                accessName:"<?=$rw.name?>" , 
+                targetElement : CONTROLS<?=$rw.nameThis?> as any
+            });
+        this<?=$rw.nameThis ?>.ucExtends.show({decision : 'replace'});<?php   break;  
+            }
+        }
+        ?>
+
+        
+        if(args.events?.beforeFinalize!=undefined) args.events?.beforeFinalize(form);
+        ucExt.finalizeInit(args);        
+        delete this.initializecomponent; 
+        delete this.initializecomponentAsync;
+        delete ucExt.initializecomponent;
+        delete ucExt.finalizeInit;
+        delete ucExt.finalizeInitAsync;
+    }
+}

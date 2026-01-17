@@ -1,0 +1,86 @@
+<?php let designer = sources.ts_tpt.designer; ?>
+<?php for(let i=0;i<designer.importer.classes.length;i++){ let $rw=designer.importer.classes[i]; 
+?>import { <?= $rw.names.map(s=>s.asText).join(',') ?> } from "<?=$rw.url?>";
+<?php } ?>
+<?php if(designer.dynamicName!=undefined){ ?>
+import <?= designer.dynamicName ?> from "<?= designer.dynamicFilePath ?>";   
+<?php } ?>
+    
+<?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>
+type <?=$tpt.name?>_ELEMENT_MAP = { <?php for(let i=0;i<$tpt.controls.length;i++){ let $rw=$tpt.controls[i]; ?>
+    <?=$rw.nameQT?> : <?=$rw.proto?><?=$rw.generic?>,<?php } ?>}
+class <?=$tpt.name?>_TEMPLATE extends TemplateNode{
+    constructor(tpt:Template) { super(tpt);   }
+   
+    getAllControls(elementHT?: HTMLElement): <?=$tpt.name?>_ELEMENT_MAP {
+        return this.extended.getAllControls(undefined,elementHT) as <?=$tpt.name?>_ELEMENT_MAP;
+    }
+}
+<?php } ?>
+
+export const cMap_<?=src.name?>: {
+    <?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>
+    <?=$tpt.name?>?: <?=$tpt.name?>_ELEMENT_MAP;
+    <?php } ?>
+} = {};
+const FILE_PATH = '<?=designer.htmlFilePath?>';  
+export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
+    public static get FILE_PATH() {
+        return FILE_PATH;
+    } 
+    static setCSS_globalVar (varList:VariableList): void  {
+        intenseGenerator.setCSS_globalVar(varList,this.FILE_PATH);
+    }
+    static Create(pera: ITptOptions): <?=src.name?> { 
+        return intenseGenerator.generateTPT(this.FILE_PATH,<?=src.name?>,import.meta.url,pera) as <?=src.name?>;
+    }
+    static async CreateAsync(pera: ITptOptions): Promise<<?=src.name?>> {
+        return await intenseGenerator.generateTPTAsync(this.FILE_PATH, <?=src.name?>, import.meta.url, pera);
+    }
+     
+    <?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>
+    public&nbsp;<?=$tpt.name?>:<?=$tpt.name?>_TEMPLATE;<?php } ?>
+   
+     async initializecomponentAsync(fargs:ITptOptions){ 
+        if(fargs.MakeEmptyTemplate)return;        
+        let htmlContents = undefined;
+        <?php if(designer.dynamicName!=undefined){ ?>
+        htmlContents =  <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
+        <?php } ?>
+        let oot = Template.GetObjectOfTemplate(fargs.cfInfo);
+        let tpts = oot.tptObj;
+       
+        <?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>
+        this.<?=$tpt.name ?> = new <?=$tpt.name ?>_TEMPLATE(this); 
+        this.<?=$tpt.name?>.extended.initializecomponent(fargs,tpts['<?=$tpt.name?>']); 
+        delete this.<?=$tpt.name?>.extended.initializecomponent;
+        <?php } ?>
+
+        if (oot.outerCSS.trim() != '')
+            this.pushTemplateCss(oot.outerCSS,fargs.cfInfo.pathOf['.scss']);
+
+        delete this.initializecomponent;
+        delete this.initializecomponentAsync; 
+    }
+    initializecomponent(fargs:ITptOptions){ 
+        if(fargs.MakeEmptyTemplate)return;
+        let htmlContents = undefined;
+        <?php if(designer.dynamicName!=undefined){ ?>
+        htmlContents =  <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
+        <?php } ?>
+        let oot = Template.GetObjectOfTemplate(fargs.cfInfo,htmlContents);
+        let tpts = oot.tptObj;
+       
+        <?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>
+        this.<?=$tpt.name ?> = new <?=$tpt.name ?>_TEMPLATE(this); 
+        this.<?=$tpt.name?>.extended.initializecomponent(fargs,tpts['<?=$tpt.name?>']); 
+        delete this.<?=$tpt.name?>.extended.initializecomponent;
+        <?php } ?>
+
+        if (oot.outerCSS.trim() != '')
+            this.pushTemplateCss(oot.outerCSS,fargs.cfInfo.pathOf['.scss']);
+
+        delete this.initializecomponent;
+        delete this.initializecomponentAsync; 
+    }
+}

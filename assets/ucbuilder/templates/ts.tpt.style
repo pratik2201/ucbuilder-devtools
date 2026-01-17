@@ -1,0 +1,36 @@
+#header{  
+ 
+}
+#primary{
+
+}
+#footer{   
+
+}
+
+/*   USAGE
+//  COMMON FOR ALL
+&{
+    overflow: hidden;  height: max-content;
+    display:block; 
+}
+
+//  HEADER TEMPLATE STYLES
+#header{  
+    & {  background-color: green; }
+    item b { color: yellow; .... }
+    ...
+}
+//  PRIMARY TEMPLATE STYLES
+#primary{   
+    & {  background-color: green; }
+    item b { color: yellow; .... }
+    ...
+}
+//  FOOTER TEMPLATE STYLES
+#footer{ 
+    & {  background-color: green; }
+    item b { color: yellow; .... }
+    ...
+}
+*/

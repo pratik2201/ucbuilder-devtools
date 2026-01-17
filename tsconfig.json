@@ -1,0 +1,45 @@
+{
+  "include": [
+    "src" ],
+  "exclude": [
+    "node_modules",
+    "out",
+    "types"
+  ],
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "baseUrl": ".",
+    "outDir": "out",
+    "rootDir": "src",
+    "strict": true,
+    "allowJs": true,
+    "strictNullChecks": false,
+    "esModuleInterop": true,
+    "checkJs": false,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": false,
+    "skipLibCheck": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "noImplicitAny": false,
+    "declaration": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "inlineSourceMap": false,
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "paths": {
+      "ucbuilder/*": [
+        "./src/*"
+      ],
+      "@ucbuilder/*": [
+        "./src/*"
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extends":"./tsconfig.json",  
+  "compilerOptions": {
+    "declarationDir": "out",
+    "declaration": true,
+    "emitDeclarationOnly": true,  
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,  
+  }
+}

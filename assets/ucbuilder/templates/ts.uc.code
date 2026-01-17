@@ -1,0 +1,10 @@
+<?php let code = sources.ts_uc.code; ?>
+import { <?=code.designerClassName?> } from '<?=code.designerFilePath?>';
+export class <?=code.className?> extends <?=code.designerClassName?>{    
+    /** 
+     *  CALLED AFTER COMPLETE INITIALIZATION WITH ARGUMENTS PASSED in static `Create` Method
+     */
+    async $() {  // USE THIS METHOD TO DECLARE YOUR `constructor` 
+        
+    }
+}

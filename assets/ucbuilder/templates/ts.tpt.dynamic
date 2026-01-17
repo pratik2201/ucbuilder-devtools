@@ -1,0 +1,12 @@
+import { HTMLx } from "ucbuilder/out/lib/WrapperHelper.js";
+export default function () {
+    let fcontent =
+        HTMLx.Wrapper([{
+            "x-caption": 'Form',
+            "<childs>": [
+
+            ]
+        }],
+        );
+    return fcontent;
+}

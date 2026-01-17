@@ -1,0 +1,16 @@
+<?php 
+function pushElement(node){ 
+     ?>
+     HTMLx.Tag("<?= node.nodeName ?>", { <?php for (const [attr, val] of Object.entries(node.props)) {   ?> "<?= attr ?>" : <?= JSON.stringify(val) ?> as any,<?php } ?> }, <?php 
+        node.children.forEach(child => {  
+            if(child.type=='text'){ 
+               ?> <?= JSON.stringify(child.value) ?>, <?php
+            }else if (child.type=='element'){  
+               ?><?= pushElement(child) ?>, <?php
+            } 
+        }); ?> )<?php } 
+    ?>import { HTMLx } from "ucbuilder/out/lib/WrapperHelper.js";
+export default function () {
+    let fcontent = <?= pushElement(this) ?>;
+    return fcontent;
+}
