@@ -1,5 +1,6 @@
 import { SpecialExtType } from "ucbuilder/out/global/ucUtil.js";
 import { codeFileInfo } from "ucbuilder/out/global/codeFileInfo.js";
+import { ISourceOptions } from "ucbuilder/out/common/enumAndMore.js";
 
 
 
@@ -67,6 +68,10 @@ export class DesignerOptionsBase {
     baseClassName = "";
     codeFilePath = "" as string;
     dynamicFilePath = "" as string;
+
+    material: ISourceOptions = {
+        
+    };
 }
 class ucDesigner extends DesignerOptionsBase {
     getterFunk = "";

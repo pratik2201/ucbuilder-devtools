@@ -1,4 +1,4 @@
- 
+
 import { codeFileInfo } from "ucbuilder/out/global/codeFileInfo.js";
 import { TemplateMaker } from "ucbuilder/out/global/TemplateMaker.js";
 import { ITemplatePathOptions } from "ucbuilder/out/common/enumAndMore.js";
@@ -220,6 +220,7 @@ export class commonParser {
                 compileedCode = ucUtil.PHP_REMOVE(cccodeCallback({}));
                 this.codeHT = compileedCode["#$"]();
                 _row.htmlFileContent = code;
+                row.designer.material.htmlContents = JSON.stringify(code);
             } else {
                 code = HTMLx.Wrapper({ "x-caption": 'Form' });
                 this.codeHT = code["#$"]() as HTMLElement;
@@ -229,7 +230,7 @@ export class commonParser {
             console.log(ex);
             return undefined;
         }
-
+        row.designer.material.cssContents = JSON.stringify(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8'));
         row.designer.baseClassName = Usercontrol.name;
         this.common1(row.designer, row.code, _row.src);
         //let outHT = ucUtil.PHP_REMOVE(ucUtil.devEsc(code) )["#$"]() as HTMLElement;
@@ -359,6 +360,7 @@ export class commonParser {
                 compileedCode = ucUtil.PHP_REMOVE(code);
                 this.codeHT = compileedCode["#$"]();
                 _row.htmlFileContent = code;
+                row.designer.material.htmlContents = JSON.stringify(code);
             } else {
                 // code = `
                 //     <x:template>
@@ -383,7 +385,7 @@ export class commonParser {
         }
         this.common1(row.designer, row.code, _row.src);
         row.designer.baseClassName = Template.name;
-
+        row.designer.material.cssContents = JSON.stringify(nodeFn.fs.readFileSync(srcPathof.scss, 'utf8'));
         switch (this.UC_CONFIG?.exports ?? this.CONFIG.exports) {
             case "import":
                 const prePath = (this.project.projectName == 'ucbuilder') ? `.` : `./node_modules/ucbuilder`;

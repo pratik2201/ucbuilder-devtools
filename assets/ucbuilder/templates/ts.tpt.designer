@@ -83,4 +83,12 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
         delete this.initializecomponent;
         delete this.initializecomponentAsync; 
     }
+
+
+    //#region MATERIALS
+    static MATERIAL  = {
+        htmlContents: <?= designer.material?.htmlContents ?>,
+        cssContents: <?= designer.material?.cssContents ?>,
+    };
+    //#endregion
 }

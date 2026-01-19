@@ -2,13 +2,14 @@ import chokidar, { ChokidarOptions, FSWatcher } from "chokidar";
 import fs from "fs";
 import path from "path";
 import { IpcMainGroup } from "ucbuilder/out/main/ipc/IpcMainHelper.js";
+import { configManage } from "ucbuilder/out/main/ipc/configManage.js";
 import { FILE_WARCHER_FILE_ROW, ucUtil } from "ucbuilder/out/global/ucUtil.js";
 import url from "url";
 import { GetProject, isSamePath } from "ucbuilder/out/common/ipc/enumAndMore.js";
 export default async function () {
     const main = IpcMainGroup('ucbuilder-devtools/src/renderer/fileWatcher');
 
-    const projectRoot = path.resolve();
+    const projectRoot = configManage.filler.MAIN_PROJECT_PATH;//path.resolve(); 
     const srcPath = projectRoot; //path.join(projectRoot, "src");
     const pathMapFile = path.join(projectRoot, "path-map.json");
     const ignoredList = [
