@@ -2,9 +2,7 @@
 <?php for(let i=0;i<designer.importer.classes.length;i++){ let $rw=designer.importer.classes[i]; 
 ?>import { <?= $rw.names.map(s=>s.asText).join(',') ?> } from "<?=$rw.url?>";
 <?php } ?>
-<?php if(designer.dynamicName!=undefined){ ?>
-import <?= designer.dynamicName ?> from "<?= designer.dynamicFilePath ?>";   
-<?php } ?>
+
     
 <?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>
 type <?=$tpt.name?>_ELEMENT_MAP = { <?php for(let i=0;i<$tpt.controls.length;i++){ let $rw=$tpt.controls[i]; ?>
@@ -43,12 +41,13 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
    
      async initializecomponentAsync(fargs:ITptOptions){ 
         if(fargs.MakeEmptyTemplate)return;        
-        let htmlContents = undefined;
+        //let htmlContents = <?= designer.dynamicName ?>.MATERIAL.htmlContents;
         <?php if(designer.dynamicName!=undefined){ ?>
-        htmlContents =  <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
+        //htmlContents =  <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
         <?php } ?>
-        let oot = Template.GetObjectOfTemplate(fargs.cfInfo);
+        let oot = Template.GetObjectOfTemplate(fargs.cfInfo,<?=designer.className ?>.MATERIAL.htmlContents,<?=designer.className ?>.MATERIAL.cssContents);
         let tpts = oot.tptObj;
+      
        
         <?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>
         this.<?=$tpt.name ?> = new <?=$tpt.name ?>_TEMPLATE(this); 
@@ -64,11 +63,11 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
     }
     initializecomponent(fargs:ITptOptions){ 
         if(fargs.MakeEmptyTemplate)return;
-        let htmlContents = undefined;
+        //let htmlContents = undefined;
         <?php if(designer.dynamicName!=undefined){ ?>
-        htmlContents =  <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
+        //htmlContents =  <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
         <?php } ?>
-        let oot = Template.GetObjectOfTemplate(fargs.cfInfo,htmlContents);
+        let oot = Template.GetObjectOfTemplate(fargs.cfInfo,<?=designer.className ?>.MATERIAL.htmlContents,<?=designer.className ?>.MATERIAL.cssContents);
         let tpts = oot.tptObj;
        
         <?php for(let j=0;j<designer.templetes.length;j++){ let $tpt=designer.templetes[j]; ?>

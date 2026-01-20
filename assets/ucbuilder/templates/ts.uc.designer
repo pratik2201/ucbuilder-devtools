@@ -2,9 +2,6 @@
 <?php for(let i=0;i<designer.importer.classes.length;i++){ let $rw=designer.importer.classes[i]; 
 ?>import { <?= $rw.names.map(s=>s.asText).join(',') ?> } from "<?=$rw.url?>";
 <?php } ?>
-<?php if(designer.dynamicName!=undefined){ ?>
-import <?= designer.dynamicName ?> from "<?= designer.dynamicFilePath ?>";   
-<?php } ?>
 
 const FILE_PATH = '<?=designer.htmlFilePath?>';  
 export class <?=designer.className ?> extends <?= designer.baseClassName ?> {    
@@ -49,9 +46,10 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
 
     async initializecomponentAsync(args: IUcOptions, form: <?=src.name?>) {
         let ucExt = this.ucExtends;
-        <?php if(designer.dynamicName!=undefined){ ?>
-        args.source.htmlContents = args?.source?.htmlContents ?? <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
-        <?php } ?>
+       
+        args.source.htmlContents = args?.source?.htmlContents ?? <?=designer.className ?>.MATERIAL.htmlContents;
+        args.source.cssContents = args?.source?.cssContents ?? <?=designer.className ?>.MATERIAL.cssContents;
+       
         ucExt.initializecomponent(args);                
         let CONTROLS = ucExt.controls;
         
@@ -69,9 +67,10 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
 
     initializecomponent(args: IUcOptions, form: <?=src.name?>) {        
         let ucExt = this.ucExtends;
-        <?php if(designer.dynamicName!=undefined){ ?>
-        args.source.htmlContents = args?.source?.htmlContents ?? <?= designer.dynamicName ?>?.htmlSource() ?? undefined;
-        <?php } ?>
+         
+        args.source.htmlContents = args?.source?.htmlContents ?? <?=designer.className ?>.MATERIAL.htmlContents;
+        args.source.cssContents = args?.source?.cssContents ?? <?=designer.className ?>.MATERIAL.cssContents;
+       
         ucExt.initializecomponent(args);          
         let CONTROLS = ucExt.controls;
         <?php 
