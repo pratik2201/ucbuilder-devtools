@@ -1,7 +1,13 @@
 import { SpecialExtType } from "ucbuilder/out/global/ucUtil.js";
 import { codeFileInfo } from "ucbuilder/out/global/codeFileInfo.js";
 import { ISourceOptions } from "ucbuilder/out/common/enumAndMore.js";
-
+function devEsc(str: string): string {
+    // debugger;
+    return str?.replace(/(.{0,1}){:(.*?)}/gm, (m, fchar, url) => {
+        let rtrn = (fchar == "\\") ? `{:${url}}` : (fchar ?? '') + "" + url;
+        return rtrn;
+    });
+}
 
 
 export class Control {
@@ -70,7 +76,7 @@ export class DesignerOptionsBase {
     dynamicFilePath = "" as string;
 
     material: ISourceOptions = {
-        
+
     };
 }
 class ucDesigner extends DesignerOptionsBase {
@@ -107,7 +113,7 @@ export class CommonRow {
     src: codeFileInfo;
     dynamicFileContent?: string;
     dynamicFileContentx?: string;
-     
+
     htmlFileContent?: string;
     sources = {
         'ts_uc': new TsUcRow(),
@@ -208,4 +214,4 @@ export const templeteControl: TempleteControl = {
 }*/
 
 
-export type ScopeType = "private" | "protected"  | "public";
+export type ScopeType = "private" | "protected" | "public";

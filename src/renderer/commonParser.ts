@@ -1,19 +1,19 @@
 
-import { codeFileInfo } from "ucbuilder/out/global/codeFileInfo.js";
-import { TemplateMaker } from "ucbuilder/out/global/TemplateMaker.js";
 import { ITemplatePathOptions } from "ucbuilder/out/common/enumAndMore.js";
-import { IFileDeclaration, UserUCConfig, IUCConfigPreference, ProjectRowR } from "ucbuilder/out/common/ipc/enumAndMore.js";
+import { IFileDeclaration, IUCConfigPreference, ProjectRowR, UserUCConfig } from "ucbuilder/out/common/ipc/enumAndMore.js";
+import { codeFileInfo } from "ucbuilder/out/global/codeFileInfo.js";
 import { ATTR_OF } from "ucbuilder/out/global/runtimeOpt.js";
+import { TemplateMaker } from "ucbuilder/out/global/TemplateMaker.js";
 import { ucUtil } from "ucbuilder/out/global/ucUtil.js";
 import { FilterContent } from "ucbuilder/out/lib/StampGenerator.js";
 import { HTMLx } from "ucbuilder/out/lib/WrapperHelper.js";
 import { ProjectManage } from "ucbuilder/out/renderer/ipc/ProjectManage.js";
 import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
+import { Template } from "ucbuilder/out/renderer/Template.js";
 import { Usercontrol } from "ucbuilder/out/renderer/Usercontrol.js";
 import { builder } from "./builder.js";
-import { dynamicDesignerElementTree, CommonRow, DesignerOptionsBase, Control, ScopeType, codeOptionsBase, ImportClassNode } from "./buildRow.js";
+import { CommonRow, Control, DesignerOptionsBase, ImportClassNode, ScopeType, codeOptionsBase, dynamicDesignerElementTree } from "./buildRow.js";
 import { commonGenerator } from "./commonGenerator.js";
-import { Template } from "ucbuilder/out/renderer/Template.js";
 
 export interface PathReplacementNode { findPath: string, replaceWith: string }
 
@@ -162,7 +162,7 @@ export class commonParser {
             if (nodeFn.fs.existsSync(pathOf.dynamicDesign)) {
                 designer.dynamicName = designer.importer.getNameNumber(`${finfo.name}$dynamicHtmlCode`);
                 try {
-                    code = await DynamicToHtml(finfo.allPathOf[filePref.outDir].dynamicDesign);
+                    code = await DbynamicToHtml(finfo.allPathOf[filePref.outDir].dynamicDesign);
                 } catch (ex) {
                     code = undefined;
                     console.error(ex);
@@ -230,6 +230,7 @@ export class commonParser {
             console.log(ex);
             return undefined;
         }
+
         row.designer.material.cssContents = JSON.stringify(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8'));
         row.designer.baseClassName = Usercontrol.name;
         this.common1(row.designer, row.code, _row.src);
@@ -385,7 +386,8 @@ export class commonParser {
         }
         this.common1(row.designer, row.code, _row.src);
         row.designer.baseClassName = Template.name;
-        row.designer.material.cssContents = JSON.stringify(nodeFn.fs.readFileSync(srcPathof.scss, 'utf8'));
+
+        row.designer.material.cssContents = JSON.stringify(nodeFn.fs.readFileSync(srcPathof.scss, 'utf-8'));
         switch (this.UC_CONFIG?.exports ?? this.CONFIG.exports) {
             case "import":
                 const prePath = (this.project.projectName == 'ucbuilder') ? `.` : `./node_modules/ucbuilder`;
@@ -407,11 +409,11 @@ export class commonParser {
 
         let subTemplates: ITemplatePathOptions[];
         if (_row.htmlFileContent == undefined)
-            subTemplates = Template.GetArrayOfTemplate(finfo);
+            subTemplates = Template.GetArrayOfTemplate(finfo, row.designer.material.htmlContents, row.designer.material.cssContents);
         else {
             let tob = Template.GetOptionsByContent(_row.htmlFileContent,
-                commonGenerator.readTemplate('ts', '.tpt', '.style'),
-                undefined, nodeFn.url.pathToFileURL(pathOf.scss));
+                commonGenerator.readTemplate('ts', '.tpt', '.style'),/*,
+                undefined, nodeFn.url.pathToFileURL(pathOf.scss)*/);
             subTemplates = Object.values(tob.tptObj);
         }
         let tpts = row.designer.templetes;

@@ -138,9 +138,7 @@ export class builder {
         let c = this.commonMng.gen.filex('ts', '.uc', '.dynamicByHtml')(source);
         return c;
     }
-    async DynamicToHtml(dynamicPath: string): Promise<IHTMLxSource> {
-        return await DynamicToHtml(dynamicPath);
-    }
+     
     counter = 0;
     async buildALL(onComplete = () => { }, _fillReplacerPath = true) {
         let _this = this;
@@ -156,11 +154,13 @@ export class builder {
         //console.log(designerPath);
         let cInfos = ((await _this.getAllDesignerXfiles())).cinfo;
         console.log(cInfos);
+        console.log(nodeFn.resource.all());
         
         const messages = {
             generateOutputAndRetry: false
         }
-
+        
+        
         for (let index = 0; index < cInfos.length; index++) {
             const cinfo = cInfos[index];
             //if (cinfo.pathOf.html.includes('ledger$form')) debugger;
@@ -170,7 +170,7 @@ export class builder {
             let dynamicOutputData = undefined as string;
             let hasDynamicOutput = nodeFn.fs.existsSync(dynamicOutputPath);
             if (hasDynamicOutput) {
-                const dtodata = (await this.DynamicToHtml(dynamicOutputPath));
+                const dtodata = (await DynamicToHtml(dynamicOutputPath));
                 dynamicOutputData = dtodata?.htmlSource();
                 dynamicOutputData = dynamicOutputData?.trim() ?? '';
                 if (dynamicOutputData.length > 0) {
@@ -196,7 +196,7 @@ export class builder {
 
                 await this.commonMng.init(cinfo);
             } else {
-
+                
                 if (nodeFn.fs.existsSync(cinfo.pathOf.dynamicDesign)) {
                     console.log('GENERATE `output` AND REBUILD DESINGER..');
                 }
@@ -248,7 +248,7 @@ export class builder {
             let outDynamicDesignFile = nodeExp.path.resolve(dfile);
             if (nodeFn.fs.existsSync(outDynamicDesignFile)) {
                 try {
-                    let content = await DynamicToHtml(outDynamicDesignFile);// new WrapperHelper(importUrl)
+                    let content = await DynamiccToHtml(outDynamicDesignFile);// new WrapperHelper(importUrl)
                     if (content != undefined) {
                         let cinfo = PathBridge.Convert(outDynamicDesignFile, outDeclareKey as any, 'dynamicDesign', srcDeclareKey as any)[srcDeclareKey];
                         commonGenerator.ensureDirectoryExistence(cinfo["html"]);
