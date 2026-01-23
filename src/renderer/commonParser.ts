@@ -14,6 +14,7 @@ import { Usercontrol } from "ucbuilder/out/renderer/Usercontrol.js";
 import { builder } from "./builder.js";
 import { CommonRow, Control, DesignerOptionsBase, ImportClassNode, ScopeType, codeOptionsBase, dynamicDesignerElementTree } from "./buildRow.js";
 import { commonGenerator } from "./commonGenerator.js";
+import { dev$minifyCss } from "ucbuilder/out/renderer/StylerRegs.js";
 
 export interface PathReplacementNode { findPath: string, replaceWith: string }
 
@@ -61,7 +62,7 @@ export class commonParser {
         }
         let mainele = htContent["#$"]();
         walk(mainele, source);
-        let c = this.gen.filex('ts', '.uc', '.dynamicByHtml')(source);
+        let c = this.gen.filex('ts.uc.dynamicByHtml')(source);
         return c;
     }
     reset() {
@@ -224,14 +225,14 @@ export class commonParser {
             } else {
                 code = HTMLx.Wrapper({ "x-caption": 'Form' });
                 this.codeHT = code["#$"]() as HTMLElement;
-                _row.dynamicFileContent = commonGenerator.readTemplate('ts', '.uc', '.dynamic');
+                _row.dynamicFileContent = commonGenerator.readTemplate('ts.uc.dynamic');
             }
         } catch (ex) {
             console.log(ex);
             return undefined;
         }
 
-        row.designer.material.cssContents = JSON.stringify(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8'));
+        row.designer.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8')));
         row.designer.baseClassName = Usercontrol.name;
         this.common1(row.designer, row.code, _row.src);
         //let outHT = ucUtil.PHP_REMOVE(ucUtil.devEsc(code) )["#$"]() as HTMLElement;
@@ -376,18 +377,17 @@ export class commonParser {
                     footer: {},
                 });
                 this.codeHT = code["#$"]() as HTMLElement;
-                _row.dynamicFileContent = commonGenerator.readTemplate('ts', '.tpt', '.dynamic');
+                _row.dynamicFileContent = commonGenerator.readTemplate('ts.tpt.dynamic');
                 _row.htmlFileContent = code;
             }
         } catch (ex) {
-            console.log(ex);
-
+            console.log(ex); 
             return undefined;
         }
         this.common1(row.designer, row.code, _row.src);
         row.designer.baseClassName = Template.name;
 
-        row.designer.material.cssContents = JSON.stringify(nodeFn.fs.readFileSync(srcPathof.scss, 'utf-8'));
+        row.designer.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathof.scss, 'utf-8')));
         switch (this.UC_CONFIG?.exports ?? this.CONFIG.exports) {
             case "import":
                 const prePath = (this.project.projectName == 'ucbuilder') ? `.` : `./node_modules/ucbuilder`;
@@ -412,7 +412,7 @@ export class commonParser {
             subTemplates = Template.GetArrayOfTemplate(finfo, row.designer.material.htmlContents, row.designer.material.cssContents);
         else {
             let tob = Template.GetOptionsByContent(_row.htmlFileContent,
-                commonGenerator.readTemplate('ts', '.tpt', '.style'),/*,
+                commonGenerator.readTemplate('ts.tpt.style'),/*,
                 undefined, nodeFn.url.pathToFileURL(pathOf.scss)*/);
             subTemplates = Object.values(tob.tptObj);
         }

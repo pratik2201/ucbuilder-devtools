@@ -135,7 +135,7 @@ export class builder {
         }
         let mainele = htContent["#$"]();
         walk(mainele, source);
-        let c = this.commonMng.gen.filex('ts', '.uc', '.dynamicByHtml')(source);
+        let c = this.commonMng.gen.filex('ts.uc.dynamicByHtml')(source);
         return c;
     }
      
@@ -188,7 +188,7 @@ export class builder {
                         const dynamicContent = nodeFn.fs.readFileSync(srcDec.dynamicDesign);
                         if (dynamicContent?.trim().length == 0) {
                             buildTimeFn.fs.writeFileSync(srcDec.dynamicDesign,
-                                this.commonMng.gen.filex('ts', '.uc', '.dynamic')({}), 'utf-8');
+                                this.commonMng.gen.filex('ts.uc.dynamic')({}), 'utf-8');
                             console.log('GENERATE `output` AND REBUILD DESINGER..');
                         }
                     }

@@ -4,6 +4,8 @@ import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
 import { CommonRow } from "./buildRow.js";
 import { TemplateMaker } from "ucbuilder/out/global/TemplateMaker.js";
 import { buildTimeFn } from "./buildTimeFn.js";
+import { fileEntry } from "ucbuilder/out/resMng/resourceManager.js";
+import { ProjectManage } from "ucbuilder/out/renderer/ipc/ProjectManage.js";
 
 interface CodeFilesNode {
     DESIGNER: string,
@@ -125,9 +127,9 @@ export class commonGenerator {
         this.ensureDirectoryExistence(dirname);
         nodeFn.fs.mkdirSync(dirname);*/
     }
-    static readTemplate(type: 'js' | 'ts' | string, extType: SpecialExtType, fileType: '.designer' | '.code' |
-        '.dynamic' | '.dynamicByHtml' | '.style') {
-        let tptFileName = `${type}${extType}${fileType}`;
+    static readTemplate(tptFileName: string/*type: 'js' | 'ts' | string, extType: SpecialExtType, fileType: '.designer' | '.code' |
+        '.dynamic' | '.dynamicByHtml' | '.style'*/) {
+        //let tptFileName = `${type}${extType}${fileType}`;
         const tptDirpath = ucUtil.devEsc(`{:../../assets/ucbuilder/templates}`);
         ///let fpath = nodeFn.path.resolve(`assets/ucbuilder/templates/${tptFileName}`);
         let fpath = nodeFn.path.resolveFilePath(import.meta.url, nodeFn.path.join(tptDirpath, tptFileName));
@@ -135,16 +137,13 @@ export class commonGenerator {
         return data;
     }
     static templateUnMapped = new Map<string, Function>();
-    filex(type: 'js' | 'ts' | string, extType: SpecialExtType, fileType: '.designer' | '.code' |
-        '.dynamic' | '.dynamicByHtml' | '.style') {
-        let tptFileName = `${type}${extType}${fileType}`;
+    filex(tptFileName: string/*type: 'js' | 'ts' | string, extType: SpecialExtType, fileType: '.designer' | '.code' |
+        '.dynamic' | '.dynamicByHtml' | '.style'*/) {
+        //let tptFileName = `${type}${extType}${fileType}`;
         if (commonGenerator.templateUnMapped.has(tptFileName))
             return commonGenerator.templateUnMapped.get(tptFileName);
         else {
-            /*if (!nodeFn.fs.existsSync(fpath)) {
-                return ASSETS[tptFileName];
-            }*/
-            const data = commonGenerator.readTemplate(type, extType, fileType);
+            const data = commonGenerator.readTemplate(tptFileName/*type, extType, fileType*/);
             const _fn = this.tMaker.compileTemplate(data);
             commonGenerator.templateUnMapped.set(tptFileName, _fn);
             return _fn;
@@ -167,41 +166,26 @@ export class commonGenerator {
         const declareEntries = Object.entries(dirDeclaration);
         for (let i = 0, len = this.rows.length; i < len; i++) {
             const row = this.rows[i];
-            //let srctype = row.src.projectInfo.config.type;
             let uctype = row.src.extCode;
             let codeFileSrctype: keyof IFileDeclarationTypesMap = 'code',
                 designerFileSrctype: keyof IFileDeclarationTypesMap = 'designer';
-            /*if (srctype == 'js') {
-                codeFileSrctype = '.js';
-                designerFileSrctype = '.designer.js';
-            } else {
-                codeFileSrctype = 'code';
-                designerFileSrctype = 'designer';
-            }*/
-            //   if (pref.outDir) continue;
             for (const [decName, fTypeInfo] of declareEntries) {
                 if (decName == 'out') continue;
-                let srctype = 'ts';//fTypeInfo.fileWisePath.code.extension["#_trim"]('.');
-
+                let srctype = 'ts';
                 commonGenerator.ensureDirectoryExistence(row.src.pathOf[designerFileSrctype]);
-                _data = this.filex(srctype, uctype, '.designer')(row);
+                _data = this.filex(`${srctype}${uctype}.designer`)(row);
                 buildTimeFn.fs.writeFileSync(row.src.pathOf[designerFileSrctype], _data);
 
                 if (row.htmlFileContent != undefined)
                     buildTimeFn.fs.writeFileSync(`${row.src.pathOf.html}`, row.htmlFileContent);
-
-
-
-
                 if (!nodeFn.fs.existsSync(row.src.pathOf[codeFileSrctype])) {
-                    _data = this.filex(srctype, uctype, '.code')(row);
+                    _data = this.filex(`${srctype}${uctype}.code`)(row);
                     buildTimeFn.fs.writeFileSync(row.src.pathOf[codeFileSrctype], _data);
                 }
                 if (!nodeFn.fs.existsSync(row.src.pathOf.scss)) {
-                    _data = this.filex(srctype, uctype, '.style')(row);
+                    _data = this.filex(`${srctype}${uctype}.style`)(row);
                     buildTimeFn.fs.writeFileSync(row.src.pathOf.scss, _data);
                 }
-
             }
 
 
@@ -222,6 +206,22 @@ export class commonGenerator {
              }*/
         }
 
+        this.generateResources();
+    }
+    generateResources() {
+        const resourcesSource = nodeFn.resource.all(); 
+        
+        
+        
+        let resContent = this.filex('resources')({
+            resources:resourcesSource
+        });
+        // ProjectManage
+        const proj = ProjectManage.MAIN_PROJECT;
+        const pref = proj.config.preference;
+        let srcPath = pref.dirDeclaration[pref.srcDir].dirPath;
+        let resFile = nodeFn.path.resolve(proj.projectPath, srcPath, 'resources.ts');
+        buildTimeFn.fs.writeFileSync(resFile, resContent, 'utf-8');
     }
 
     /*getDesignerCode(rw: CommonRow) {

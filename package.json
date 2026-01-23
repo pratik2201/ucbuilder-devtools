@@ -15,7 +15,7 @@
     "rebuild:start": "npm run rebuild && npm run start"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^20.11.0", 
     "@types/ucbuilder": "file:../ucbuilder/ucbuilder-3.0.0-beta.0.tgz",
     "electron": "^39.1.1",
     "rimraf": "^6.0.1",
@@ -23,7 +23,7 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "ucbuilder": "file:../ucbuilder/ucbuilder-3.0.0-beta.0.tgz"
+    "ucbuilder": "file:../ucbuilder/ucbuilder-3.0.0-beta.0.tgz" 
   },
   "dependencies": {
     "chokidar": "^4.0.3"
