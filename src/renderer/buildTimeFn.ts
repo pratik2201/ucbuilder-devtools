@@ -7,12 +7,15 @@ export class buildTimeFn {
     static onReady(callback: () => void) {
         this.renderer.loaded(callback);
     }
+    static crypto = {
+        guid: () => { return this.renderer.sendSync('crypto.guid',[]); }
+    }
     static fs = {
 
         rmSync: (path: fs.PathLike, options?: fs.RmOptions) => {
             return this.renderer.sendSync('fs.rmSync', [path, options]);
         },
-       
+
         mkdirSync: (path: string, options: fs.MakeDirectoryOptions): string => {
             return this.renderer.sendSync('fs.mkdirSync', [path, options]);
         },

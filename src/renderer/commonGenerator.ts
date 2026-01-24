@@ -209,10 +209,7 @@ export class commonGenerator {
         this.generateResources();
     }
     generateResources() {
-        const resourcesSource = nodeFn.resource.all(); 
-        
-        
-        
+        const resourcesSource = nodeFn.resource.all();  
         let resContent = this.filex('resources')({
             resources:resourcesSource
         });

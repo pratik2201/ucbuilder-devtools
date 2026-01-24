@@ -74,7 +74,8 @@ export class DesignerOptionsBase {
     baseClassName = "";
     codeFilePath = "" as string;
     dynamicFilePath = "" as string;
-
+    rootPath: string = "" as string;
+    guid: string = "" as string;
     material: ISourceOptions = {
 
     };
@@ -85,6 +86,7 @@ class ucDesigner extends DesignerOptionsBase {
 }
 class tptDesigner extends DesignerOptionsBase {
     templetes = [] as Template[];
+
 }
 export class dynamicDesignerElementTree {
     type: 'text' | 'element' = 'element';

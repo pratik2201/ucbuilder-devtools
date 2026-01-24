@@ -106,9 +106,12 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
         delete ucExt.finalizeInitAsync;
     }
 
+    readonly guid  = "<?= designer.guid ?>";
 
     //#region MATERIALS
-    static MATERIAL  = {
+    static MATERIAL  = { 
+        //rootPath:<?= designer.rootPath ?>,
+        //guid: "<?= designer.guid ?>",
         htmlContents: <?= designer.material?.htmlContents ?>,
         cssContents: <?= designer.material?.cssContents ?>,
     };

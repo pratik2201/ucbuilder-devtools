@@ -15,6 +15,7 @@ import { builder } from "./builder.js";
 import { CommonRow, Control, DesignerOptionsBase, ImportClassNode, ScopeType, codeOptionsBase, dynamicDesignerElementTree } from "./buildRow.js";
 import { commonGenerator } from "./commonGenerator.js";
 import { dev$minifyCss } from "ucbuilder/out/renderer/StylerRegs.js";
+import { buildTimeFn } from "./buildTimeFn.js";
 
 export interface PathReplacementNode { findPath: string, replaceWith: string }
 
@@ -232,6 +233,8 @@ export class commonParser {
             return undefined;
         }
 
+        row.designer.guid = `${finfo.projectInfo.projectName}-${buildTimeFn.crypto.guid()}`;
+        row.designer.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathOf.scss)));
         row.designer.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8')));
         row.designer.baseClassName = Usercontrol.name;
         this.common1(row.designer, row.code, _row.src);
@@ -364,13 +367,6 @@ export class commonParser {
                 _row.htmlFileContent = code;
                 row.designer.material.htmlContents = JSON.stringify(code);
             } else {
-                // code = `
-                //     <x:template>
-                //         <wrapper id="primary"></wrapper>
-                //         <wrapper id="header"></wrapper>
-                //         <wrapper id="footer"></wrapper>
-                //     </x:template>
-                //     `;
                 code = HTMLx.Template({
                     primary: {},
                     header: {},
@@ -381,11 +377,13 @@ export class commonParser {
                 _row.htmlFileContent = code;
             }
         } catch (ex) {
-            console.log(ex); 
+            console.log(ex);
             return undefined;
         }
         this.common1(row.designer, row.code, _row.src);
         row.designer.baseClassName = Template.name;
+        row.designer.guid = `${finfo.projectInfo.projectName}-${buildTimeFn.crypto.guid()}`;
+        row.designer.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathof.scss)));
 
         row.designer.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathof.scss, 'utf-8')));
         switch (this.UC_CONFIG?.exports ?? this.CONFIG.exports) {
