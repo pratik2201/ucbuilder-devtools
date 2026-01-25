@@ -76,6 +76,8 @@ export class DesignerOptionsBase {
     dynamicFilePath = "" as string;
     rootPath: string = "" as string;
     guid: string = "" as string;
+    htmlGuid = "";
+    scssGuid = "";
     material: ISourceOptions = {
 
     };

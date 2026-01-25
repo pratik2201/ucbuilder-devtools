@@ -19,7 +19,7 @@ import { buildTimeFn } from "./buildTimeFn.js";
 import { PathBridge } from "ucbuilder/out/global/pathBridge.js";
 
 export interface PathReplacementNode { findPath: string, replaceWith: string }
-
+type ContentGuid = { guid: string, content: string };
 export class commonParser {
     generateNodes(htContent: string): string {
         let rtrn = '';
@@ -197,10 +197,6 @@ export class commonParser {
             console.log(ex);
             return undefined;
         }
-
-        row.designer.guid = `${finfo.projectInfo.projectName}-${buildTimeFn.crypto.guid()}`;
-        row.designer.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathOf.scss)));
-        row.designer.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8')));
         row.designer.baseClassName = Usercontrol.name;
         this.common1(row.designer, row.code, _row.src);
         //let outHT = ucUtil.PHP_REMOVE(ucUtil.devEsc(code) )["#$"]() as HTMLElement;
@@ -266,17 +262,8 @@ export class commonParser {
 
         }
 
-        row.designer.importer.addImport([finfo.name], row.designer.codeFilePath);
-        nodeFn.resource.setResource(row.designer.guid + '-scss', {
-            filePath: outPathOf.scss,
-            type: 'cssFile',
-            value: row.designer.material.cssContents
-        });
-        nodeFn.resource.setResource(row.designer.guid + '-html', {
-            filePath: outPathOf.html,
-            type: 'htmlFile',
-            value: row.designer.material.htmlContents
-        });
+        this.common2(row.designer, finfo);
+
         return _row;
     }
 
@@ -324,12 +311,8 @@ export class commonParser {
             console.log(ex);
             return undefined;
         }
-        this.common1(row.designer, row.code, _row.src);
         row.designer.baseClassName = Template.name;
-        row.designer.guid = `${finfo.projectInfo.projectName}-${buildTimeFn.crypto.guid()}`;
-        row.designer.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathof.scss)));
-
-        row.designer.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathof.scss, 'utf-8')));
+        this.common1(row.designer, row.code, _row.src);
         switch (this.UC_CONFIG?.exports ?? this.CONFIG.exports) {
             case "import":
                 const prePath = (this.project.projectName == 'ucbuilder') ? `.` : `./node_modules/ucbuilder`;
@@ -397,19 +380,44 @@ export class commonParser {
             });
         });
         //}
-        row.designer.importer.addImport([finfo.name], row.designer.codeFilePath);
-
-        nodeFn.resource.setResource(row.designer.guid + '-scss', {
-            filePath: outPathof.scss,
-            type: 'cssFile',
-            value: this.treeShake(row.designer.material.cssContents, _row.src.projectInfo.projectName, outPathof.scss)
-        });
-        nodeFn.resource.setResource(row.designer.guid + '-html', {
-            filePath: outPathof.html,
-            type: 'htmlFile',
-            value: row.designer.material.htmlContents
-        });
+        this.common2(row.designer, finfo);
         return _row;
+    }
+
+    guidList = new Map<string, string>();
+    getGuid = (_path: string): string => {
+        _path = nodeFn.path.normalize(_path);
+        let guid = this.guidList.get(_path);
+        if (guid != undefined) return guid;
+        else {
+            guid = buildTimeFn.crypto.guid();
+            this.guidList.set(_path, guid);
+            return guid;
+        }
+    }
+    common2 = (des: DesignerOptionsBase, finfo: codeFileInfo) => {
+        des.importer.addImport([finfo.name], des.codeFilePath);
+
+        const pref = finfo?.projectInfo.config.preference;
+        const srcPathOf = finfo.allPathOf[pref.srcDir];
+        const outPathOf = finfo.allPathOf[pref.outDir];
+        const guid = buildTimeFn.crypto.guid();
+        des.guid = `${guid}-${finfo.projectInfo.projectName}`;
+        des.htmlGuid = `html-${des.guid}`;
+        des.scssGuid = `scss-${des.guid}`;
+        des.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathOf.scss)));
+        des.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8')));
+
+        nodeFn.resource.setResource(des.scssGuid, {
+            filePath: outPathOf.scss,
+            type: 'cssFile',
+            value: this.treeShake(des.material.cssContents, finfo.projectInfo.projectName, outPathOf.scss)
+        });
+        nodeFn.resource.setResource(des.htmlGuid, {
+            filePath: outPathOf.html,
+            type: 'htmlFile',
+            value: des.material.htmlContents
+        });
     }
     common1 = (des: DesignerOptionsBase, code: codeOptionsBase, finfo: codeFileInfo) => {
         const pathOf = finfo.pathOf;
@@ -417,6 +425,7 @@ export class commonParser {
         code.className = finfo.name;
         des.className =
             code.designerClassName = `${finfo.name}$Designer`;
+
 
 
 
@@ -446,8 +455,8 @@ export class commonParser {
         if (ctrlNode != undefined) ctrlNode.importedClassName = name;
     }
     treeShake(cssContent: string, projectName: string, cssFilePath: string) {
-        let csinfo = buildProcessCss(cssContent, projectName);
-        let mainKey = makeGuid(projectName);
+        let csinfo = CssResolver.buildProcessCss(cssContent, projectName);
+        let mainKey = CssResolver.makeGuid(projectName);
 
         for (const [key, res] of Array.from(csinfo.resources.entries())) {
 
