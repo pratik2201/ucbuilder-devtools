@@ -213,6 +213,8 @@ export class commonGenerator {
         let resContent = this.filex('resources')({
             resources:resourcesSource
         });
+        console.log(resourcesSource);
+        return;
         // ProjectManage
         const proj = ProjectManage.MAIN_PROJECT;
         const pref = proj.config.preference;

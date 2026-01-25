@@ -1,6 +1,6 @@
 
 import { ITemplatePathOptions } from "ucbuilder/out/common/enumAndMore.js";
-import { IFileDeclaration, IUCConfigPreference, ProjectRowR, UserUCConfig } from "ucbuilder/out/common/ipc/enumAndMore.js";
+import { GetProject, IFileDeclaration, IUCConfigPreference, ProjectRowR, UserUCConfig } from "ucbuilder/out/common/ipc/enumAndMore.js";
 import { codeFileInfo } from "ucbuilder/out/global/codeFileInfo.js";
 import { ATTR_OF } from "ucbuilder/out/global/runtimeOpt.js";
 import { TemplateMaker } from "ucbuilder/out/global/TemplateMaker.js";
@@ -16,6 +16,7 @@ import { CommonRow, Control, DesignerOptionsBase, ImportClassNode, ScopeType, co
 import { commonGenerator } from "./commonGenerator.js";
 import { dev$minifyCss } from "ucbuilder/out/renderer/StylerRegs.js";
 import { buildTimeFn } from "./buildTimeFn.js";
+import { PathBridge } from "ucbuilder/out/global/pathBridge.js";
 
 export interface PathReplacementNode { findPath: string, replaceWith: string }
 
@@ -153,42 +154,6 @@ export class commonParser {
         if (nodeFn.fs.existsSync(finfo.allPathOf[srcDec].dynamicDesign)) {
             designer.dynamicName = designer.importer.getNameNumber(`${finfo.name}$dynamicHtmlCode`);
         }
-        // if (nodeFn.fs.existsSync(pathOf.dynamicDesign + 'c') == true) {
-        //     nodeFn.fs.rmSync(pathOf.dynamicDesign);
-        //     //nodeFn.fs.rmSync(pathOf.dynamicDesign + 'c'); 
-        //     return undefined;
-        // }
-
-        /*const filePref = finfo?.projectInfo?.config?.preference;
-        if (htmlContents == undefined && pathOf.dynamicDesign != undefined) {
-            if (nodeFn.fs.existsSync(pathOf.dynamicDesign)) {
-                designer.dynamicName = designer.importer.getNameNumber(`${finfo.name}$dynamicHtmlCode`);
-                try {
-                    code = await DbynamicToHtml(finfo.allPathOf[filePref.outDir].dynamicDesign);
-                } catch (ex) {
-                    code = undefined;
-                    console.error(ex);
-                }
-            } else {
-                if (nodeFn.fs.existsSync(pathOf.html)) {
-                    let htcontent = nodeFn.fs.readFileSync(pathOf.html);
-                    const dynamicCode = this.generateNodes(htcontent);
-                    if (dynamicCode != undefined && dynamicCode.length > 0) {
-                        code = htcontent;
-                        _row.dynamicFileContent = dynamicCode;
-                        if (_row.dynamicFileContent != undefined)
-                            nodeFn.fs.writeFileSync(`${_row.src.pathOf.dynamicDesign}`, _row.dynamicFileContent);
-                        // if (_row.dynamicFileContentx != undefined)
-                        //     nodeFn.fs.writeFileSync(`${_row.src.pathOf.dynamicDesign}c`, _row.dynamicFileContentx);
-                    }
-                }
-            }
-        } else {
-            console.warn('DYNAMIC DESIGN NOT LOADED :' + finfo.allPathOf[filePref.outDir].dynamicDesign);
-        }
-        code = htmlContents ?? code ??
-            (nodeFn.fs.existsSync(pathOf.html) ?
-                nodeFn.fs.readFileSync(pathOf.html) : undefined);*/
         return code;
     }
     fillUc = async (finfo: codeFileInfo, htmlContents: string, _row: CommonRow) => {
@@ -246,6 +211,8 @@ export class commonParser {
         let accessKeys = `"` + ucUtil.distinct(Array.from(this.codeHT.querySelectorAll(`[${ATTR_OF.ACCESSIBLE_KEY}]`))
             .map(s => s.getAttribute(ATTR_OF.ACCESSIBLE_KEY))).join(`" | "`) + `"`;
 
+
+
         row.designer.getterFunk = accessKeys;
         //let im = row.designer.importClasses;
         const _importer = row.designer.importer;
@@ -300,6 +267,16 @@ export class commonParser {
         }
 
         row.designer.importer.addImport([finfo.name], row.designer.codeFilePath);
+        nodeFn.resource.setResource(row.designer.guid + '-scss', {
+            filePath: outPathOf.scss,
+            type: 'cssFile',
+            value: row.designer.material.cssContents
+        });
+        nodeFn.resource.setResource(row.designer.guid + '-html', {
+            filePath: outPathOf.html,
+            type: 'htmlFile',
+            value: row.designer.material.htmlContents
+        });
         return _row;
     }
 
@@ -319,40 +296,7 @@ export class commonParser {
 
         let code: string;
         const pathOf = finfo.pathOf;
-        // // if (htmlContents == undefined && pathOf.dynamicDesign != undefined && nodeFn.fs.existsSync(pathOf.dynamicDesign)) {
-        // //     row.designer.dynamicName = row.designer.importer.getNameNumber(`${finfo.name}$dynamicHtmlCode`);
-        // //     code = await importHTMLts(finfo.allPathOf[filePref.outDir].dynamicDesign);
-        // // } else {
-        // //     console.warn('DYNAMIC DESIGN NOT LOADED :' + finfo.allPathOf[filePref.outDir].dynamicDesign);
-        // // }
 
-        // /*if (nodeFn.fs.existsSync(pathOf.dynamicDesign + 'c') == true) {
-        //     nodeFn.fs.rmSync(pathOf.dynamicDesign);
-        //     //nodeFn.fs.rmSync(pathOf.dynamicDesign + 'c'); 
-        //     return undefined;
-        // }*/
-        // // if (htmlContents == undefined && pathOf.dynamicDesign != undefined) {
-        // //     if (nodeFn.fs.existsSync(pathOf.dynamicDesign)) {
-        // //         row.designer.dynamicName = row.designer.importer.getNameNumber(`${finfo.name}$dynamicHtmlCode`);
-        // //         code = await importHTMLts(finfo.allPathOf[filePref.outDir].dynamicDesign);
-        // //     } else {
-        // //         if (nodeFn.fs.existsSync(pathOf.html)) {
-        // //             let htcontent = nodeFn.fs.readFileSync(pathOf.html);
-        // //             const dynamicCode = this.generateNodes(htcontent);
-        // //             if (dynamicCode != undefined && dynamicCode.length > 0) {
-        // //                 code = htcontent;
-        // //                 _row.dynamicFileContent = dynamicCode;
-        // //             }
-
-        // //         }
-        // //     }
-        // // } else {
-        // //     console.warn('DYNAMIC DESIGN NOT LOADED :' + finfo.allPathOf[filePref.outDir].dynamicDesign);
-        // // }
-
-        // // code = htmlContents ?? code ??
-        // //     nodeFn.fs.existsSync(pathOf.html) ?
-        // //     nodeFn.fs.readFileSync(pathOf.html) : undefined;
         code = await this.common0(htmlContents, _row, row.designer);
 
         if (code == undefined) return undefined;
@@ -454,6 +398,17 @@ export class commonParser {
         });
         //}
         row.designer.importer.addImport([finfo.name], row.designer.codeFilePath);
+
+        nodeFn.resource.setResource(row.designer.guid + '-scss', {
+            filePath: outPathof.scss,
+            type: 'cssFile',
+            value: this.treeShake(row.designer.material.cssContents, _row.src.projectInfo.projectName, outPathof.scss)
+        });
+        nodeFn.resource.setResource(row.designer.guid + '-html', {
+            filePath: outPathof.html,
+            type: 'htmlFile',
+            value: row.designer.material.htmlContents
+        });
         return _row;
     }
     common1 = (des: DesignerOptionsBase, code: codeOptionsBase, finfo: codeFileInfo) => {
@@ -490,5 +445,159 @@ export class commonParser {
         let _import = classList.find(s => s.url.toLowerCase() == _urlLowerCase);
         if (ctrlNode != undefined) ctrlNode.importedClassName = name;
     }
+    treeShake(cssContent: string, projectName: string, cssFilePath: string) {
+        let csinfo = buildProcessCss(cssContent, projectName);
+        let mainKey = makeGuid(projectName);
 
+        for (const [key, res] of Array.from(csinfo.resources.entries())) {
+
+            /*nodeFn.resource.setResource(key, {
+                value: res
+            });*/
+        }
+
+
+        return '';
+    }
+}
+// export function dev$minifyCss(content: string) {
+//     content = (content.replace(/\/\*([\s\S]*?)\*\//gi, "")
+//         .replace(/\/\/.*/mg, "")).replace(/(;|,|:|{|})[\n\r ]*/gi, "$1");
+//     return content;
+// }
+export interface CssBuildResult {
+    css: string;
+    resources: Map<string, string>; // guid -> original path
+}
+
+
+export class CssResolver {
+    static makeGuid(project: string) {
+        return project + "-" + buildTimeFn.crypto.guid(); /*crypto.randomUUID();*/
+    }
+    static buildProcessCss(
+        input: string,
+        projectName: string
+    ): CssBuildResult {
+
+        let out = "";
+        let inString: string | null = null;
+        let inUrl = false;
+        let inUse = false;
+
+        let buffer = "";
+        const resources = new Map<string, string>();
+
+        function registerResource(path: string): string {
+            const guid = CssResolver.makeGuid(projectName);
+            resources.set(guid, path);
+            return `__RES::${guid}__`;
+        }
+
+
+        for (let i = 0; i < input.length; i++) {
+            const c = input[i];
+
+            // ---------------- strings ----------------
+            if (!inString && (c === '"' || c === "'" || c === "`")) {
+                inString = c;
+                out += c;
+                continue;
+            }
+
+            if (inString) {
+                out += c;
+                if (c === "\\" && input[i + 1]) {
+                    out += input[++i];
+                    continue;
+                }
+                if (c === inString) inString = null;
+                continue;
+            }
+
+            // ---------------- detect url( ----------------
+            if (!inUrl && input.slice(i, i + 4).toLowerCase() === "url(") {
+                inUrl = true;
+                buffer = "";
+                out += "url(";
+                i += 3;
+                continue;
+            }
+
+            // ---------------- detect @use ----------------
+            if (!inUse && input.slice(i, i + 4).toLowerCase() === "@use") {
+                inUse = true;
+                out += "@use";
+                i += 3;
+                continue;
+            }
+
+            // ---------------- inside url(...) ----------------
+            if (inUrl) {
+                if (c === ")") {
+                    inUrl = false;
+
+                    let raw = buffer.trim();
+                    let quote = "";
+
+                    if (
+                        (raw.startsWith('"') && raw.endsWith('"')) ||
+                        (raw.startsWith("'") && raw.endsWith("'"))
+                    ) {
+                        quote = raw[0];
+                        raw = raw.slice(1, -1);
+                    }
+
+                    const key = registerResource(raw);
+                    out += quote + key + quote + ")";
+                    continue;
+                }
+
+                buffer += c;
+                continue;
+            }
+
+
+            // ---------------- inside @use "..." ----------------
+            if (inUse) {
+                if (c === '"' || c === "'") {
+                    const q = c;
+                    let path = "";
+
+                    i++;
+                    while (i < input.length && input[i] !== q) {
+                        path += input[i++];
+                    }
+
+                    const key = registerResource(path);
+                    out += q + key + q;
+                    continue;
+                }
+            }
+
+
+            // ---------------- minify whitespace ----------------
+            if (/\s/.test(c)) {
+                const p = out[out.length - 1];
+                const n = input[i + 1];
+                if (p && !/[{:;,}()]/.test(p) && !/[{:;,}()]/.test(n || "")) {
+                    out += " ";
+                }
+                continue;
+            }
+
+            out += c;
+        }
+        return {
+            css: out.replace(/\s*([:;,{}()])\s*/g, "$1").replace(/;}/g, "}").trim(),
+            resources
+        };
+    }
+    static runtimeApplyCssResources(
+        css: string,
+        resolver: (guid: string) => string
+    ) {
+
+        return css.replace(/__RES::([a-zA-Z0-9-]+)__/g, (_, id) => resolver(id));
+    }
 }
