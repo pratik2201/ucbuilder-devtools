@@ -1,10 +1,9 @@
 
-import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
-import { minifyCss } from "./minify.js";
+import { ResourceKeyBridge } from "ucbuilder/out/common/enumAndMore.js";
 import { ucUtil } from "ucbuilder/out/global/ucUtil.js";
-import { GetProject } from "ucbuilder/out/common/ipc/enumAndMore.js";
-import { PathBridge } from "ucbuilder/out/global/pathBridge.js";
+import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
 import { buildTimeFn } from "../../renderer/buildTimeFn.js";
+import { minifyCss } from "./minify.js";
 
 const resourceMap = new Map<string, BuildResource>();
 // key = absPath OR data/blob string
@@ -28,10 +27,12 @@ interface BuildResource {
 } 
 
 const INSIDE_ATTR_RE = /\[inside=["']([^"']+)["']\]/g;
-function makeKey(guid: string) {
-  return `__RES::${guid}__`;
-}
+// function makeeKeey(guid: string) {
+//   return `__RES::${guid}__`;
+// }
+// src/resources/ResourceKeyBridge.ts
 
+ 
 class GuidResolver {
   private unitMap = new Map<string, string>(); // fixedWindow.uc -> guid
   private fileMap = new Map<string, string>(); // any other file
@@ -98,7 +99,7 @@ export class CssBuildEngine {
     absPath = nodeFn.path.resolve(absPath);
 
     if (this.resourceMap.has(absPath)) {
-      return makeKey(this.resourceMap.get(absPath)!.guid);
+      return ResourceKeyBridge.makeKey(this.resourceMap.get(absPath)!.guid);
     }
 
     if (!nodeFn.fs.existsSync(absPath)) {
@@ -145,7 +146,7 @@ export class CssBuildEngine {
     });
 
     res.content = minifyCss(css);
-    return makeKey(guid);
+    return ResourceKeyBridge.makeKey(guid);
   }
 
   // ----------------------------------
@@ -154,7 +155,7 @@ export class CssBuildEngine {
 
     if (isDataOrBlob(rel)) {
       if (this.resourceMap.has(rel)) {
-        return makeKey(this.resourceMap.get(rel)!.guid);
+        return ResourceKeyBridge.makeKey(this.resourceMap.get(rel)!.guid);
       }
 
       const guid = this.guidResolver.getGuidForFile(rel);
@@ -165,7 +166,7 @@ export class CssBuildEngine {
         content: rel
       });
 
-      return makeKey(guid);
+      return ResourceKeyBridge.makeKey(guid);
     }
 
     const abs = nodeFn.path.resolve(nodeFn.path.dirname(owner), rel);
@@ -173,7 +174,7 @@ export class CssBuildEngine {
     if (!nodeFn.fs.existsSync(abs)) return rel;
 
     if (this.resourceMap.has(abs)) {
-      return makeKey(this.resourceMap.get(abs)!.guid);
+      return ResourceKeyBridge.makeKey(this.resourceMap.get(abs)!.guid);
     }
 
     const buf = nodeFn.fs.readFileBufferSync(abs);
@@ -199,7 +200,7 @@ export class CssBuildEngine {
       source: abs
     });
 
-    return makeKey(guid);
+    return ResourceKeyBridge.makeKey(guid);
   }
 }
 function stripCssComments(input: string): string {

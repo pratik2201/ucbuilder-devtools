@@ -1,5 +1,5 @@
 
-import { ITemplatePathOptions } from "ucbuilder/out/common/enumAndMore.js";
+import { ITemplatePathOptions, ResourceKeyBridge } from "ucbuilder/out/common/enumAndMore.js";
 import { GetProject, IFileDeclaration, IUCConfigPreference, ProjectRowR, UserUCConfig } from "ucbuilder/out/common/ipc/enumAndMore.js";
 import { codeFileInfo } from "ucbuilder/out/global/codeFileInfo.js";
 import { ATTR_OF } from "ucbuilder/out/global/runtimeOpt.js";
@@ -17,7 +17,6 @@ import { commonGenerator } from "./commonGenerator.js";
 import { dev$minifyCss } from "ucbuilder/out/renderer/StylerRegs.js";
 import { buildTimeFn } from "./buildTimeFn.js";
 import { PathBridge } from "ucbuilder/out/global/pathBridge.js";
-import { CssBuildEngine } from "../main/resMng/CssBuildEngine.js";
 
 export interface PathReplacementNode { findPath: string, replaceWith: string }
 type ContentGuid = { guid: string, content: string };
@@ -409,8 +408,8 @@ export class commonParser {
         des.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathOf.scss)));
         des.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8')));
 
-        des.scssGuid = this.gen.cssBulder.buildScss(srcPathOf.scss);
-        des.htmlGuid = this.gen.cssBulder.buildScss(srcPathOf.html);
+        des.cssGuid = ResourceKeyBridge.extractKey(this.gen.cssBulder.buildScss(srcPathOf.scss));
+        des.htmlGuid = ResourceKeyBridge.extractKey(this.gen.cssBulder.buildScss(srcPathOf.html));
 
         // Resources.setResource(des.scssGuid, {
         //     filePath: outPathOf.scss,

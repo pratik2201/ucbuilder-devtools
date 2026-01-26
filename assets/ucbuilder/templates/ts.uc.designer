@@ -46,7 +46,8 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
 
     async initializecomponentAsync(args: IUcOptions, form: <?=src.name?>) {
         let ucExt = this.ucExtends;
-       
+        args.source.cssGuid =  <?=designer.className ?>.MATERIAL.cssGuid;
+        args.source.htmlGuid =  <?=designer.className ?>.MATERIAL.htmlGuid;
         args.source.htmlContents = args?.source?.htmlContents ?? <?=designer.className ?>.MATERIAL.htmlContents;
         args.source.cssContents = args?.source?.cssContents ?? <?=designer.className ?>.MATERIAL.cssContents;
        
@@ -67,7 +68,8 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
 
     initializecomponent(args: IUcOptions, form: <?=src.name?>) {        
         let ucExt = this.ucExtends;
-         
+        args.source.cssGuid =  <?=designer.className ?>.MATERIAL.cssGuid;
+        args.source.htmlGuid =  <?=designer.className ?>.MATERIAL.htmlGuid;
         args.source.htmlContents = args?.source?.htmlContents ?? <?=designer.className ?>.MATERIAL.htmlContents;
         args.source.cssContents = args?.source?.cssContents ?? <?=designer.className ?>.MATERIAL.cssContents;
        
@@ -111,7 +113,7 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
     //#region MATERIALS
     static MATERIAL  = { 
         htmlGuid: "<?= designer.htmlGuid ?>",
-        scssGuid: "<?= designer.scssGuid ?>",
+        cssGuid: "<?= designer.cssGuid ?>",
         htmlContents: <?= designer.material?.htmlContents ?>,
         cssContents: <?= designer.material?.cssContents ?>,
     };

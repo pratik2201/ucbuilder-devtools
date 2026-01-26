@@ -77,7 +77,7 @@ export class DesignerOptionsBase {
     rootPath: string = "" as string;
      
     htmlGuid = "";
-    scssGuid = "";
+    cssGuid = "";
     material: ISourceOptions = {
 
     };
