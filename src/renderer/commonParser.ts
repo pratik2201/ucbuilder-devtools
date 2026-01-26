@@ -17,6 +17,7 @@ import { commonGenerator } from "./commonGenerator.js";
 import { dev$minifyCss } from "ucbuilder/out/renderer/StylerRegs.js";
 import { buildTimeFn } from "./buildTimeFn.js";
 import { PathBridge } from "ucbuilder/out/global/pathBridge.js";
+import { CssBuildEngine } from "../main/resMng/CssBuildEngine.js";
 
 export interface PathReplacementNode { findPath: string, replaceWith: string }
 type ContentGuid = { guid: string, content: string };
@@ -402,22 +403,25 @@ export class commonParser {
         const srcPathOf = finfo.allPathOf[pref.srcDir];
         const outPathOf = finfo.allPathOf[pref.outDir];
         const guid = buildTimeFn.crypto.guid();
-        des.guid = `${guid}-${finfo.projectInfo.projectName}`;
-        des.htmlGuid = `html-${des.guid}`;
-        des.scssGuid = `scss-${des.guid}`;
+        // des.guid = this.gen.cssBulder.buildScss(srcPathOf.scss); //`${guid}-${finfo.projectInfo.projectName}`;
+        //des.htmlGuid = `html-${des.guid}`;
+        //des.scssGuid = `scss-${des.guid}`;
         des.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathOf.scss)));
         des.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8')));
 
-        nodeFn.resource.setResource(des.scssGuid, {
-            filePath: outPathOf.scss,
-            type: 'cssFile',
-            value: this.treeShake(des.material.cssContents, finfo.projectInfo.projectName, outPathOf.scss)
-        });
-        nodeFn.resource.setResource(des.htmlGuid, {
-            filePath: outPathOf.html,
-            type: 'htmlFile',
-            value: des.material.htmlContents
-        });
+        des.scssGuid = this.gen.cssBulder.buildScss(srcPathOf.scss);
+        des.htmlGuid = this.gen.cssBulder.buildScss(srcPathOf.html);
+
+        // Resources.setResource(des.scssGuid, {
+        //     filePath: outPathOf.scss,
+        //     type: 'cssFile',
+        //     value: this.treeShake(des.material.cssContents, finfo.projectInfo.projectName, outPathOf.scss)
+        // });
+        // Resources.setResource(des.htmlGuid, {
+        //     filePath: outPathOf.html,
+        //     type: 'htmlFile',
+        //     value: des.material.htmlContents
+        // });
     }
     common1 = (des: DesignerOptionsBase, code: codeOptionsBase, finfo: codeFileInfo) => {
         const pathOf = finfo.pathOf;

@@ -10,6 +10,8 @@ import { PathBridge } from "ucbuilder/out/global/pathBridge.js";
 import { ProjectRowR } from "ucbuilder/out/common/ipc/enumAndMore.js";
 import { ProjectManage } from "ucbuilder/out/renderer/ipc/ProjectManage.js"; 
 import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
+import { CssBuildEngine } from "../main/resMng/CssBuildEngine.js";
+//import { Resources } from "./resMng.js";
 
 export interface SourceCodeNode {
     designerCode?: string,
@@ -30,6 +32,7 @@ export class builder {
         this.ROOT_DIR = nodeFn.path.resolve('');
         this.project = ProjectManage.getInfoByProjectPath(this.ROOT_DIR);
         this.commonMng = new commonParser(this);
+        this.commonMng.gen.cssBulder = new CssBuildEngine(this.project.projectName);
         this.filewatcher = new fileWatcher(this);
         this.filewatcher.init();
         const _this = this;
@@ -154,7 +157,7 @@ export class builder {
         //console.log(designerPath);
         let cInfos = ((await _this.getAllDesignerXfiles())).cinfo;
         console.log(cInfos);
-        console.log(nodeFn.resource.all());
+        //console.log(Resources.all());
         
         const messages = {
             generateOutputAndRetry: false

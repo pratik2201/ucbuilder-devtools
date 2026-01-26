@@ -1,0 +1,217 @@
+
+import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
+import { minifyCss } from "./minify.js";
+import { ucUtil } from "ucbuilder/out/global/ucUtil.js";
+import { GetProject } from "ucbuilder/out/common/ipc/enumAndMore.js";
+import { PathBridge } from "ucbuilder/out/global/pathBridge.js";
+
+
+
+const resourceMap = new Map<string, BuildResource>();
+// key = absPath OR data/blob string
+const SCSS_IMPORT_RE =
+  /@(use|import)\s+(?:url\()?["']([^"')]+)["']\)?\s*;/gi;
+
+const CSS_URL_RE =
+  /url\(\s*["']?([^"')]+)["']?\s*\)/gi;
+
+function isDataOrBlob(p: string) {
+  return p.startsWith("data:") || p.startsWith("blob:");
+}
+
+type BuildResourceType = "css" | "html" | "image" | "text" | "raw" | "data";
+
+interface BuildResource {
+  guid: string;
+  type: BuildResourceType;
+  content: string;
+  source?: string;
+}
+
+function newGuid(projName: string) {
+  return projName + ':' + crypto.randomUUID();
+}
+
+function makeKey(guid: string) {
+  return `__RES::${guid}__`;
+}
+const INSIDE_ATTR_RE = /\[inside=["']([^"']+)["']\]/g;
+export class CssBuildEngine {
+
+  private resourceMap = new Map<string, BuildResource>();
+  projectName: string = '';
+  get resources() {
+    return this.resourceMap;
+  }
+
+  // ENTRY
+  buildScss(absPath: string): string {
+    absPath = nodeFn.path.resolve(absPath);
+
+    if (this.resourceMap.has(absPath)) {
+      return makeKey(this.resourceMap.get(absPath).guid);
+    }
+
+    // allocate first (circular safe)
+    const proj = GetProject(absPath, PathBridge.source, nodeFn.url as any);
+    const guid = newGuid(proj.projectName);
+    const res: BuildResource = {
+      guid,
+      type: "css",
+      content: "",
+      source: absPath
+    };
+
+    if (!nodeFn.fs.existsSync(absPath)) {
+      console.log(`'${absPath}' file not exist called inside  'CssBuildEngine.buildScss'`);
+      return undefined;
+    }
+    this.resourceMap.set(absPath, res);
+
+    let css = nodeFn.fs.readFileSync(absPath, "utf8");
+    css = stripCssComments(css);
+    css = ucUtil.devEsc(css)
+
+
+    css = css.replace(INSIDE_ATTR_RE, (_match, relPath) => {
+
+      // ignore data: or blob:
+      if (relPath.startsWith("data:") || relPath.startsWith("blob:")) {
+        return _match;
+      }
+
+      // resolve absolute path of the UC/TPT file
+      const targetAbs = nodeFn.path.resolve(nodeFn.path.dirname(absPath), relPath);
+
+      // ensure that file is built and get GUID
+      const key = this.buildScss(targetAbs);
+      if (key == undefined) return _match;
+      else
+        return `[inside="${key}"]`;
+    });
+
+
+    // ---- imports ----
+    css = css.replace(SCSS_IMPORT_RE, (_m, _t, rel) => {
+
+      if (isDataOrBlob(rel)) return _m;
+
+      const childAbs = nodeFn.path.resolve(nodeFn.path.dirname(absPath), rel);
+      const key = this.buildScss(childAbs);
+      if (key != undefined)
+        return `@use "${this.buildScss(childAbs)}";`;
+      else {
+        console.log('error in @use inside scssfile');
+        return _m;
+      }
+    });
+
+    // ---- url(...) ----
+    css = css.replace(CSS_URL_RE, (_m, rel) => {
+      return `url("${this.resolveAsset(rel, absPath)}")`;
+    });
+    res.content = minifyCss(css);
+    return makeKey(guid);
+  }
+
+  // ----------------------------------
+
+  private resolveAsset(rel: string, owner: string): string {
+    if (isDataOrBlob(rel)) {
+      if (this.resourceMap.has(rel)) {
+        return makeKey(this.resourceMap.get(rel)!.guid);
+      }
+
+      const guid = newGuid(this.projectName);
+      this.resourceMap.set(rel, {
+        guid,
+        type: "data",
+        content: rel
+      });
+
+      return makeKey(guid);
+    }
+    const abs = nodeFn.path.resolve(nodeFn.path.dirname(owner), rel);
+    if (!nodeFn.fs.existsSync(abs)) {
+      console.log(`'${abs}' file not exist called inside '${owner}'`);
+      return rel;
+    }
+    if (this.resourceMap.has(abs)) {
+      return makeKey(this.resourceMap.get(abs)!.guid);
+    }
+
+    const buf = nodeFn.fs.readFileBufferSync(abs);
+
+    const ext = nodeFn.path.extname(abs).slice(1).toLowerCase();
+
+    let type: BuildResourceType = "raw";
+    let content = "";
+
+    if (["png", "jpg", "jpeg", "gif", "webp", "svg", "ico"].includes(ext)) {
+      type = "image";
+      content = `data:image/${ext};base64,${ucUtil.bufferToString(buf, "base64")}`;
+    } else if (["css", "txt", "html"].includes(ext)) {
+      type = "text";
+      content = ucUtil.bufferToString(buf, "utf8");
+
+    } else {
+      content = ucUtil.bufferToString(buf, "base64");
+    }
+    const guid = newGuid(this.projectName);
+
+    this.resourceMap.set(abs, {
+      guid,
+      type,
+      content,
+      source: abs
+    });
+
+    return makeKey(guid);
+  }
+}
+function stripCssComments(input: string): string {
+  let out = "";
+  let i = 0;
+  let inStr: string | null = null;
+
+  while (i < input.length) {
+    const c = input[i];
+    const n = input[i + 1];
+
+    // inside string
+    if (inStr) {
+      out += c;
+      if (c === inStr && input[i - 1] !== "\\") inStr = null;
+      i++;
+      continue;
+    }
+
+    // start string
+    if (c === '"' || c === "'") {
+      inStr = c;
+      out += c;
+      i++;
+      continue;
+    }
+
+    // block comment
+    if (c === "/" && n === "*") {
+      i += 2;
+      while (i < input.length && !(input[i] === "*" && input[i + 1] === "/")) i++;
+      i += 2;
+      continue;
+    }
+
+    // line comment
+    if (c === "/" && n === "/") {
+      i += 2;
+      while (i < input.length && input[i] !== "\n") i++;
+      continue;
+    }
+
+    out += c;
+    i++;
+  }
+
+  return out;
+}

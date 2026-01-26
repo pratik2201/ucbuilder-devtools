@@ -4,8 +4,9 @@ import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
 import { CommonRow } from "./buildRow.js";
 import { TemplateMaker } from "ucbuilder/out/global/TemplateMaker.js";
 import { buildTimeFn } from "./buildTimeFn.js";
-import { fileEntry } from "ucbuilder/out/resMng/resourceManager.js";
 import { ProjectManage } from "ucbuilder/out/renderer/ipc/ProjectManage.js";
+ 
+import { CssBuildEngine } from "../main/resMng/CssBuildEngine.js";
 
 interface CodeFilesNode {
     DESIGNER: string,
@@ -152,8 +153,9 @@ export class commonGenerator {
     generateFiles(rows: CommonRow[] = []) {
         let _this = this;
         console.log(rows);
-
         if (rows == undefined || rows.length == 0) return;
+
+
         this.rows = rows;
         let _data = "";
         const pref = this.rows[0]?.src.callerProject.config.preference;
@@ -208,19 +210,39 @@ export class commonGenerator {
 
         this.generateResources();
     }
+
+    cssBulder: CssBuildEngine;
     generateResources() {
-        const resourcesSource = nodeFn.resource.all();  
-        let resContent = this.filex('resources')({
-            resources:resourcesSource
+        const resourcesSource = Array.from(this.cssBulder.resources.values());
+        resourcesSource.forEach(s => {
+            s.content = JSON.stringify(s.content);
+            s.source = JSON.stringify(s.source);
+            s.guid = JSON.stringify(s.guid);
         });
-        console.log(resourcesSource);
-        return;
-        // ProjectManage
+        let resContent = this.filex('resources')({
+            resources: resourcesSource
+        });
+        // console.log(resourcesSource);
+        // return;
+        // // ProjectManage
         const proj = ProjectManage.MAIN_PROJECT;
         const pref = proj.config.preference;
         let srcPath = pref.dirDeclaration[pref.srcDir].dirPath;
         let resFile = nodeFn.path.resolve(proj.projectPath, srcPath, 'resources.ts');
         buildTimeFn.fs.writeFileSync(resFile, resContent, 'utf-8');
+        return;
+        // const resourcesSource = Resources.all();  
+        // let resContent = this.filex('resources')({
+        //     resources:resourcesSource
+        // });
+        // console.log(resourcesSource);
+        // return;
+        // // ProjectManage
+        // const proj = ProjectManage.MAIN_PROJECT;
+        // const pref = proj.config.preference;
+        // let srcPath = pref.dirDeclaration[pref.srcDir].dirPath;
+        // let resFile = nodeFn.path.resolve(proj.projectPath, srcPath, 'resources.ts');
+        // buildTimeFn.fs.writeFileSync(resFile, resContent, 'utf-8');
     }
 
     /*getDesignerCode(rw: CommonRow) {

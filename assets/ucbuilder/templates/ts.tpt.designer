@@ -86,6 +86,8 @@ export class <?=designer.className ?> extends <?= designer.baseClassName ?> {
 
     //#region MATERIALS
     static MATERIAL  = {
+        htmlGuid: "<?= designer.htmlGuid ?>",
+        scssGuid: "<?= designer.scssGuid ?>",
         htmlContents: <?= designer.material?.htmlContents ?>,
         cssContents: <?= designer.material?.cssContents ?>,
     };

@@ -1,22 +1,24 @@
 /*
 fileEntry {
-    type: FileTypes;
-    value: string;
-    resourceKey: any;
-    filePath: string;
-    preloadRenderer: boolean;
-    preloadMain: boolean;
+    content:"&{background-color:yellow;display:block}#group{}"
+    guid:"builder-test:76974fe5-5239-443c-8848-6ef2e6844d3f"
+    source: "D:\\projects\\electronProjects\\builder-test\\src\\renderer\\controls\\itemTemplate.tpt.scss"
+    type:"css"
 }
 {
     preloadRenderer: [] as fileEntry[],
     resources: [] as fileEntry[],
 }
 */
-<?php 
-   for (const [reskey,res] of resources) {
-     
-         ?>// <?= res.value ?>
-           
-        <?php
-   } 
-?>
+import { Resources } from "ucbuilder/out/renderer/resMng.js";
+
+Resources.bulkRegister([
+<?php  for (const res of resources) { ?>
+    {
+        key: <?= res.guid ?>,
+        type: "<?= res.type ?>",
+        source: <?= res.source ?>,
+        content: <?= res.content ?>,
+    }, 
+<?php } ?>
+]);
