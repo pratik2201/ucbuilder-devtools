@@ -151,7 +151,7 @@ export class commonParser {
         code = htmlContents ??
             nodeFn.fs.readFileSync(finfo.allPathOf[srcDec].html) /*??
             nodeFn.fs.readFileSync(finfo.allPathOf[filePref.outDir].html)*/;
-        if (nodeFn.fs.existsSync(finfo.allPathOf[srcDec].dynamicDesign)) {
+        if (nodeFn.fs.existsSync(finfo.allPathOf[srcDec].tsLayout)) {
             designer.dynamicName = designer.importer.getNameNumber(`${finfo.name}$dynamicHtmlCode`);
         }
         return code;
@@ -243,10 +243,12 @@ export class commonParser {
                 // debugger;
                 let _sspath = ucUtil.devEsc(element.getAttribute("x-from"));
                 let _subpath = nodeFn.path.resolveFilePath(srcPathOf.html, _sspath);//["#toFilePath"]();
-                let uFInf = new codeFileInfo();
+               // if (_subpath == 'D:/projects/electronProjects/sharepnl/src/htmlFiles/renderer/util/controls/fixedWindow.uc.html') debugger;
+                console.log([_subpath]);
+                    let uFInf = new codeFileInfo();
                 uFInf.parseUrl(_subpath, pref.outDir as any, outPathOf.html);
                 if (uFInf.pathOf == undefined) debugger;
-                if (_exists(uFInf.pathOf.code) || _exists(uFInf.pathOf.dynamicDesign) ||
+                if (_exists(uFInf.pathOf.code) || _exists(uFInf.pathOf.tsLayout) ||
                     _exists(uFInf.pathOf.scss) || _exists(uFInf.pathOf.html)) {
                     ctr.type = uFInf.extCode;
                     ctr.nodeName = uFInf.name;
@@ -255,6 +257,8 @@ export class commonParser {
                     let fullcodePath = uFInf.allPathOf[uFpref.outDir].code;
                     let nws = ucUtil.changeExtension(nodeFn.path.relativeFilePath(outPathOf.designer, fullcodePath), '.ts', '.js');
                     ctr.codeFilePath = nws; //   oldone;
+                    console.log(ctr.codeFilePath);
+                    
                     ctr.importedClassName = row.designer.importer.addImport([uFInf.name], ctr.codeFilePath)[0];
                     row.designer.controls.push(ctr);
                 }
@@ -408,8 +412,8 @@ export class commonParser {
         des.rootPath = JSON.stringify(nodeFn.path.normalize(nodeFn.path.relativeFilePath(finfo.projectInfo.projectPath, outPathOf.scss)));
         des.material.cssContents = JSON.stringify(dev$minifyCss(nodeFn.fs.readFileSync(srcPathOf.scss, 'utf-8')));
 
-        des.cssGuid = ResourceKeyBridge.extractKey(this.gen.cssBulder.buildScss(srcPathOf.scss));
-        des.htmlGuid = ResourceKeyBridge.extractKey(this.gen.cssBulder.buildScss(srcPathOf.html));
+        des.cssGuid = ResourceKeyBridge.extractKey(this.gen.cssBulder.build(srcPathOf.scss));
+        des.htmlGuid = ResourceKeyBridge.extractKey(this.gen.cssBulder.build(srcPathOf.html));
 
         // Resources.setResource(des.scssGuid, {
         //     filePath: outPathOf.scss,
@@ -432,8 +436,8 @@ export class commonParser {
 
 
 
-        if (pathOf.dynamicDesign != undefined) {
-            let dsTodyn = ucUtil.resolveSubNode(nodeFn.path.relativeFilePath(pathOf.designer, pathOf.dynamicDesign));
+        if (pathOf.tsLayout != undefined) {
+            let dsTodyn = ucUtil.resolveSubNode(nodeFn.path.relativeFilePath(pathOf.designer, pathOf.tsLayout));
             des.dynamicFilePath = ucUtil.changeExtension(dsTodyn, this.SRC_CODE_EXT, this.OUT_CODE_EXT);
         }
         if (pathOf.html != undefined) {

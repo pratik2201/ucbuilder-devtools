@@ -6,7 +6,7 @@ import { TemplateMaker } from "ucbuilder/out/global/TemplateMaker.js";
 import { buildTimeFn } from "./buildTimeFn.js";
 import { ProjectManage } from "ucbuilder/out/renderer/ipc/ProjectManage.js";
  
-import { CssBuildEngine } from "../main/resMng/CssBuildEngine.js";
+import { ResourceBuildEngine } from "../main/resMng/ResourceBuildEngine.js";
 
 interface CodeFilesNode {
     DESIGNER: string,
@@ -211,7 +211,7 @@ export class commonGenerator {
         this.generateResources();
     }
 
-    cssBulder: CssBuildEngine;
+    cssBulder: ResourceBuildEngine;
     generateResources() {
         const resourcesSource = Array.from(this.cssBulder.resources.values());
         resourcesSource.forEach(s => {
@@ -228,7 +228,7 @@ export class commonGenerator {
         const proj = ProjectManage.MAIN_PROJECT;
         const pref = proj.config.preference;
         let srcPath = pref.dirDeclaration[pref.srcDir].dirPath;
-        let resFile = nodeFn.path.resolve(proj.projectPath, srcPath, 'resources.ts');
+        let resFile = nodeFn.path.resolve(proj.projectPath, srcPath, pref.build.ResourceDeclarationFile);
         buildTimeFn.fs.writeFileSync(resFile, resContent, 'utf-8');
         return;
         // const resourcesSource = Resources.all();  

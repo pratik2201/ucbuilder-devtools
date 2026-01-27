@@ -1,14 +1,18 @@
 import fs from "node:fs";
 import { IpcMainGroup } from "ucbuilder/out/main/ipc/IpcMainHelper.js";
-//import { I_WriteFileSyncPerameters } from "./buildTimeFn.js";
-import { randomUUID } from "crypto";
+import crypto from "crypto";
+ 
 export default function () {
 
     const main = IpcMainGroup('ucbuilder-devtools/src/renderer/buildTimeFn');
 
     main.On('crypto.guid', (event) => {
-        event.returnValue = randomUUID();
+        event.returnValue = crypto.randomUUID();
     });
+
+   
+
+
     main.On('fs.rmSync', (event, path: fs.PathLike, options?: fs.RmOptions) => {
         event.returnValue = fs.rmSync(path, options);
     });
@@ -25,3 +29,4 @@ export default function () {
         event.returnValue = fs.writeFileSync(argsPath, argsData, options);
     });
 }
+

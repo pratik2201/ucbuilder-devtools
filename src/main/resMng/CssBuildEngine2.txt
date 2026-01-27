@@ -24,7 +24,7 @@ interface BuildResource {
   type: BuildResourceType;
   content: string;
   source?: string;
-} 
+}
 
 const INSIDE_ATTR_RE = /\[inside=["']([^"']+)["']\]/g;
 // function makeeKeey(guid: string) {
@@ -32,18 +32,14 @@ const INSIDE_ATTR_RE = /\[inside=["']([^"']+)["']\]/g;
 // }
 // src/resources/ResourceKeyBridge.ts
 
- 
+
 class GuidResolver {
   private unitMap = new Map<string, string>(); // fixedWindow.uc -> guid
   private fileMap = new Map<string, string>(); // any other file
 
-  constructor(private projectName: string) {}
+  constructor(private projectName: string) { }
 
   private newGuid() { return this.projectName + ':' + buildTimeFn.crypto.guid(); }
-
-  /*private newGuid() {
-    return crypto.randomUUID();
-  }*/
 
   getGuidForScss(absPath: string): string {
     const unit = detectUnit(absPath); // *.uc.scss | *.tpt.scss
@@ -95,7 +91,7 @@ export class CssBuildEngine {
   }
 
   // ENTRY
-  buildScss(absPath: string): string {
+  buildScss(absPath: string, _guid?: string): string {
     absPath = nodeFn.path.resolve(absPath);
 
     if (this.resourceMap.has(absPath)) {
@@ -107,7 +103,7 @@ export class CssBuildEngine {
       return undefined;
     }
 
-    const guid = this.guidResolver.getGuidForScss(absPath);
+    const guid = _guid ?? this.guidResolver.getGuidForScss(absPath);
 
     const res: BuildResource = {
       guid,
@@ -116,7 +112,6 @@ export class CssBuildEngine {
       source: absPath
     };
 
-    // allocate first (circular safe)
     this.resourceMap.set(absPath, res);
 
     let css = nodeFn.fs.readFileSync(absPath, "utf8");

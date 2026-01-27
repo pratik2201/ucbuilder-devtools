@@ -1,24 +1,12 @@
-/*
-fileEntry {
-    content:"&{background-color:yellow;display:block}#group{}"
-    guid:"builder-test:76974fe5-5239-443c-8848-6ef2e6844d3f"
-    source: "D:\\projects\\electronProjects\\builder-test\\src\\renderer\\controls\\itemTemplate.tpt.scss"
-    type:"css"
-}
-{
-    preloadRenderer: [] as fileEntry[],
-    resources: [] as fileEntry[],
-}
-*/
-import { Resources } from "ucbuilder/out/renderer/resMng.js";
+import { BuildResource } from "ucbuilder/out/enumAndMore.js";
 
-Resources.bulkRegister([
+export const Resources:BuildResource[] = [
 <?php  for (const res of resources) { ?>
     {
-        key: <?= res.guid ?>,
+        guid: <?= res.guid ?>,
         type: "<?= res.type ?>",
         source: <?= res.source ?>,
         content: <?= res.content ?>,
     }, 
 <?php } ?>
-]);
+];

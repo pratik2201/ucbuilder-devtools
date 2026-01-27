@@ -8,7 +8,8 @@ export class buildTimeFn {
         this.renderer.loaded(callback);
     }
     static crypto = {
-        guid: () => { return this.renderer.sendSync('crypto.guid',[]); }
+        guid: () => { return this.renderer.sendSync('crypto.guid', []); },
+      
     }
     static fs = {
 
