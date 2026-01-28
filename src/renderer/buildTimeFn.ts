@@ -7,9 +7,12 @@ export class buildTimeFn {
     static onReady(callback: () => void) {
         this.renderer.loaded(callback);
     }
+    static buildDesignerTS(files: string[], outDir: string) {
+        return this.renderer.sendSync('buildDesignerTS', [files, outDir]);
+    }
     static crypto = {
         guid: () => { return this.renderer.sendSync('crypto.guid', []); },
-      
+
     }
     static fs = {
 

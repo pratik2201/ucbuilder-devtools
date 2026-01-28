@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { IpcMainGroup } from "ucbuilder/out/main/ipc/IpcMainHelper.js";
 import crypto from "crypto";
+import { buildDesignerTS } from "./dynamicBuilder.js";
  
 export default function () {
 
@@ -27,6 +28,10 @@ export default function () {
 
     main.On('fs.writeFileSync', (event, argsPath, argsData, options?: fs.WriteFileOptions) => {  //args: I_WriteFileSyncPerameters
         event.returnValue = fs.writeFileSync(argsPath, argsData, options);
+    });
+
+     main.On('buildDesignerTS', (event, files: string[], outDir: string) => {  
+        event.returnValue = buildDesignerTS(files,outDir);
     });
 }
 

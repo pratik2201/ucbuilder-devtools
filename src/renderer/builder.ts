@@ -74,7 +74,7 @@ export class builder {
                 const extCode = codeFileInfo.getExtType(fullpath);
                 if (extCode != 'none') {
                     const cInfo = new codeFileInfo();
-                   // const isDynamicFile = fullpath.endsWith(srcDynamicExt);
+                    // const isDynamicFile = fullpath.endsWith(srcDynamicExt);
                     const isHtmlFile = fullpath.endsWith(srcHtmlExt);
                     if (/*isDynamicFile ||*/ isHtmlFile) {
                         if (cInfo.parseUrl(fullpath, pref.srcDir as any) == false) results;
@@ -88,6 +88,7 @@ export class builder {
                     }
                 }
             });
+
         return rtrn;
         /*const outExt = pref.dirDeclaration[pref.outDir]?.fileWisePath?.tsLayout?.extension;
         if (outExt == undefined) { throw new Error("!!!cant find output dynamic design file (.html.js) extension"); }
@@ -98,6 +99,48 @@ export class builder {
                     results.push(fullpath);
             });
         return results;*/
+    }
+    async buildDynamic() {
+        const rtrn = {
+            cinfo: [] as codeFileInfo[]
+        };
+        let results = [];
+        const rootPath = nodeFn.path.resolve();
+        const ign = [nodeFn.path.join(rootPath, 'node_modules')];
+        const pref = this.project.config.preference;
+        const srcDec = pref.dirDeclaration[pref.srcDir];
+        const outDec = pref.dirDeclaration[pref.outDir];
+        const srcFileDec = srcDec?.fileDeclaration;
+        const srcDynamicExt = srcFileDec?.tsLayout?.extension;
+        const srcHtmlExt = srcFileDec?.html?.extension;
+        if (srcDynamicExt == undefined) { console.log("!!! no dynamic design file (.html.js) "); }
+        const fileToBuild = [] as string[];
+        await this.recursive(nodeFn.path.join(this.project.projectPath, srcDec.dirPath),
+            (pth) => false,
+            async (fullpath) => {
+                if (fullpath.endsWith(srcDynamicExt)) fileToBuild.push(fullpath);
+            });
+        // console.log(['IN = ',fileToBuild]);
+        // console.log(['OUT = ',nodeFn.path.join(this.project.projectPath, outDec.dirPath)]);
+
+
+        buildTimeFn.buildDesignerTS(fileToBuild, nodeFn.path.join(this.project.projectPath, outDec.dirPath));
+
+        for (let index = 0; index < fileToBuild.length; index++) {
+            const dynamicHtmlPath = fileToBuild[index];
+
+            const decBase = PathBridge.Convert(dynamicHtmlPath, 'src', 'tsLayout', 'out');
+            const outDec = decBase[pref.outDir];
+            const srcDec = decBase[pref.srcDir];
+            const data = (await import(outDec.tsLayout)).default as IHTMLxSource;
+            buildTimeFn.fs.writeFileSync(srcDec.html, data.htmlSource(), 'utf-8');
+            //console.log(data.htmlSource());            
+        };
+
+
+
+
+        return rtrn;
     }
     nodex = {
         dynamicFiles: [] as string[],
@@ -161,7 +204,7 @@ export class builder {
         //console.log(designerPath);
 
         const runtimeSrc: BuildResource[] = [];
-
+        this.buildDynamic();
         await this.recursive(nodeFn.path.join(this.project.projectPath, outDec.dirPath),
             (pth) => false,
             async (fullpath) => {
@@ -198,9 +241,11 @@ export class builder {
                 }
                 */
             });
+
+
         let cInfos = ((await _this.getAllDesignerXfiles())).cinfo;
-            console.log(cInfos);
-            
+        console.log(cInfos);
+
         //console.log(Resources.all());
 
         const messages = {
