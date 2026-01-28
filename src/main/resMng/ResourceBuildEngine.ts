@@ -1,7 +1,7 @@
 import { BuildResource, BuildResourceType, ResourceKeyBridge } from "ucbuilder/out/common/enumAndMore.js";
 import { ucUtil } from "ucbuilder/out/global/ucUtil.js";
-import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";  
-import { ResourceManage } from "ucbuilder/out/renderer/ResourceManage.js";  
+import { nodeFn } from "ucbuilder/out/renderer/nodeFn.js";
+import { ResourceManage } from "ucbuilder/out/renderer/ResourceManage.js";
 import { minifyCss } from "./minify.js";
 import { buildTimeFn } from "../../renderer/buildTimeFn.js";
 
@@ -81,11 +81,15 @@ export class ResourceBuildEngine {
 
   /* ========== PUBLIC ENTRY ========== */
 
-  build(path: string, guid?: string): string {
+  build(path: string, name?: string): string {
     const absPath = nodeFn.path.resolve(path);
 
     if (this.resourceMap.has(absPath)) {
-      return ResourceKeyBridge.makeKey(this.resourceMap.get(absPath)!.guid);
+      const res = this.resourceMap.get(absPath);
+      if (name != undefined && name != '') {
+        if (res.name == undefined || res.name == '') res.name = JSON.stringify(name);
+      }
+      return ResourceKeyBridge.makeKey(res!.guid);
     }
 
     if (!nodeFn.fs.existsSync(absPath)) {
@@ -95,20 +99,21 @@ export class ResourceBuildEngine {
 
     const ext = nodeFn.path.extname(absPath).toLowerCase();
 
-    if (ext === ".scss" || ext === ".css") return this.buildCss(absPath, guid);
-    if (ext === ".html" || ext === ".htm") return this.buildHtml(absPath, guid);
+    if (ext === ".scss" || ext === ".css") return this.buildCss(absPath, name);
+    if (ext === ".html" || ext === ".htm") return this.buildHtml(absPath, name);
 
-    return this.buildAsset(absPath);
+    return this.buildAsset(absPath, name);
   }
 
   /* ========== CSS HANDLER ========== */
 
-  private buildCss(absPath: string, _guid?: string): string {
+  private buildCss(absPath: string, name?: string): string {
 
-    const guid = _guid ?? this.guidResolver.getGuidForBuild(absPath);
+    const guid = this.guidResolver.getGuidForBuild(absPath);
 
     const res: BuildResource = {
       guid,
+      name: JSON.stringify(name),
       type: "css",
       content: "",
       source: absPath
@@ -148,14 +153,15 @@ export class ResourceBuildEngine {
 
   /* ========== HTML PLACEHOLDER (future) ========== */
 
-  private buildHtml(absPath: string, _guid?: string): string {
+  private buildHtml(absPath: string, name?: string): string {
 
-    const guid = _guid ?? this.guidResolver.getGuidForBuild(absPath);
+    const guid = this.guidResolver.getGuidForBuild(absPath);
 
     const html = nodeFn.fs.readFileSync(absPath, "utf8");
 
     this.resourceMap.set(absPath, {
       guid,
+      name: JSON.stringify(name),
       type: "html",
       content: ResourceManage.x1(html),
       source: absPath
@@ -166,7 +172,7 @@ export class ResourceBuildEngine {
 
   /* ========== ASSET HANDLER ========== */
 
-  private buildAsset(absPath: string): string {
+  private buildAsset(absPath: string, name?: string): string {
 
     const guid = this.guidResolver.getGuidForBuild(absPath);
 
@@ -186,6 +192,7 @@ export class ResourceBuildEngine {
 
     this.resourceMap.set(absPath, {
       guid,
+      name: JSON.stringify(name),
       type,
       content,
       source: absPath
@@ -196,7 +203,7 @@ export class ResourceBuildEngine {
 
   /* ========== url()/data handler ========== */
 
-  private resolveAsset(rel: string, owner: string): string {
+  private resolveAsset(rel: string, owner: string, name?: string): string {
 
     if (isDataOrBlob(rel)) {
 
@@ -207,6 +214,7 @@ export class ResourceBuildEngine {
 
       this.resourceMap.set(rel, {
         guid,
+        name: JSON.stringify(name),
         type: "data",
         content: ResourceManage.x1(rel)
       });
@@ -218,7 +226,7 @@ export class ResourceBuildEngine {
 
     if (!nodeFn.fs.existsSync(abs)) return rel;
 
-    return this.build(abs);
+    return this.build(abs, name);
   }
 }
 

@@ -155,7 +155,7 @@ export class commonGenerator {
         console.log(rows);
         if (rows == undefined || rows.length == 0) return;
 
-
+        
         this.rows = rows;
         let _data = "";
         const pref = this.rows[0]?.src.callerProject.config.preference;

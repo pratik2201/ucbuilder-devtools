@@ -77,7 +77,7 @@ export class builder {
                     // const isDynamicFile = fullpath.endsWith(srcDynamicExt);
                     const isHtmlFile = fullpath.endsWith(srcHtmlExt);
                     if (/*isDynamicFile ||*/ isHtmlFile) {
-                        if (cInfo.parseUrl(fullpath, pref.srcDir as any) == false) results;
+                        if (cInfo.parseUrl(fullpath, pref.srcDir as any) == false) return;
                         if (cInfo.pathOf == undefined /*|| !nodeFn.fs.existsSync(cInfo.pathOf.html)*/) return;
                         if (rtrn.cinfo.findIndex(s => (
                             (isHtmlFile && s.pathOf.html == cInfo.pathOf.html) /*||
@@ -125,15 +125,19 @@ export class builder {
 
 
         buildTimeFn.buildDesignerTS(fileToBuild, nodeFn.path.join(this.project.projectPath, outDec.dirPath));
+        // console.log(fileToBuild);
 
         for (let index = 0; index < fileToBuild.length; index++) {
             const dynamicHtmlPath = fileToBuild[index];
-
-            const decBase = PathBridge.Convert(dynamicHtmlPath, 'src', 'tsLayout', 'out');
+            const decBase = PathBridge.Convert(dynamicHtmlPath, 'src', 'tsLayout', 'out').paths;
             const outDec = decBase[pref.outDir];
             const srcDec = decBase[pref.srcDir];
-            const data = (await import(outDec.tsLayout)).default as IHTMLxSource;
-            buildTimeFn.fs.writeFileSync(srcDec.html, data.htmlSource(), 'utf-8');
+            const mdl = (await import(outDec.tsLayout)).default as IHTMLxSource;
+            const data = mdl.htmlSource();
+
+            commonGenerator.ensureDirectoryExistence(srcDec.html);
+            buildTimeFn.fs.writeFileSync(srcDec.html, data, 'utf-8');
+            //console.log(dynamicHtmlPath);
             //console.log(data.htmlSource());            
         };
 
@@ -204,24 +208,25 @@ export class builder {
         //console.log(designerPath);
 
         const runtimeSrc: BuildResource[] = [];
-        this.buildDynamic();
+        await this.buildDynamic();
         await this.recursive(nodeFn.path.join(this.project.projectPath, outDec.dirPath),
             (pth) => false,
             async (fullpath) => {
-                const filwRes: BuildResource[] = [];
                 if (fullpath.endsWith('.resx.js')) {
+                    const filwRes: BuildResource[] = [];
                     const _default = (await import(fullpath)).default;
                     if (typeof _default === 'function')
                         filwRes.push(..._default());
-                    if (typeof _default === 'object')
+                    else if (typeof _default === 'object')
                         filwRes.push(..._default);
+                    filwRes.forEach(r => {
+                        if (r.source != undefined) {
+                            this.commonMng.gen.cssBulder.build(nodeFn.path.resolveFilePath(fullpath, r.source), r.name);
+                        }
+                    });
+                    runtimeSrc.push(...filwRes);
                 }
-                filwRes.forEach(r => {
-                    if (r.source != undefined) {
-                        this.commonMng.gen.cssBulder.build(nodeFn.path.resolveFilePath(fullpath, r.source), r.guid);
-                    }
-                });
-                runtimeSrc.push(...filwRes);
+
                 /*
                 const extCode = codeFileInfo.getExtType(fullpath);
                 if (extCode != 'none') {
@@ -258,13 +263,14 @@ export class builder {
             //if (cinfo.pathOf.html.includes('ledger$form')) debugger;
             const srcDec = cinfo.allPathOf[pref.srcDir];
             const outDec = cinfo.allPathOf[pref.outDir];
-            let dynamicOutputPath = outDec.tsLayout;
+            /*let dynamicOutputPath = outDec.tsLayout;
             let dynamicOutputData = undefined as string;
             let hasDynamicOutput = nodeFn.fs.existsSync(dynamicOutputPath);
             if (hasDynamicOutput) {
-
+               // console.log(`====>${dynamicOutputPath}`);
                 const dtodata = (await DynamicToHtml(dynamicOutputPath));
                 dynamicOutputData = dtodata?.htmlSource();
+                //console.log(dynamicOutputData);
                 dynamicOutputData = dynamicOutputData?.trim() ?? '';
                 if (dynamicOutputData.length > 0) {
                     const htnode = dynamicOutputData["#$"]();
@@ -291,12 +297,12 @@ export class builder {
             } else {
                 if (nodeFn.fs.existsSync(srcDec.tsLayout)) {
                     console.log('GENERATE `output` AND REBUILD DESINGER..');
-                } else if (nodeFn.fs.existsSync(srcDec.htmlLayout)) {
-                    buildTimeFn.fs.writeFileSync(srcDec.html, nodeFn.fs.readFileSync(srcDec.htmlLayout), 'utf-8');
-                }
-                if (nodeFn.fs.existsSync(srcDec.html))
-                    await this.commonMng.init(cinfo);
+                } else */if (nodeFn.fs.existsSync(srcDec.htmlLayout)) {
+                buildTimeFn.fs.writeFileSync(srcDec.html, nodeFn.fs.readFileSync(srcDec.htmlLayout), 'utf-8');
             }
+            if (nodeFn.fs.existsSync(srcDec.html))
+                await this.commonMng.init(cinfo);
+            // }
         }
         if (nodeFn.fs.existsSync(designerPath)) {
             let codeExt = fileWisePath.code.extension;
@@ -304,7 +310,7 @@ export class builder {
 
             await this.recursive(designerPath, undefined, async (pth) => {
                 if (pth.endsWith(designerExt)) {
-                    let _pthObj = PathBridge.Convert(pth, pref.srcDir as any, 'designer')[pref.srcDir];
+                    let _pthObj = PathBridge.Convert(pth, pref.srcDir as any, 'designer').paths[pref.srcDir];
                     let bothExist = /*nodeFn.fs.existsSync(_pthObj.code) &&*/ (nodeFn.fs.existsSync(_pthObj.html) || nodeFn.fs.existsSync(_pthObj.tsLayout));
                     if (!bothExist) {
                         console.log(`${_pthObj.designer} file deleted...`);
@@ -321,7 +327,7 @@ export class builder {
  
             await this.recursive(designerPath, undefined, async (pth) => {
                 if (pth.endsWith(designerExt)) {
-                    let _pthObj = PathBridge.Convert(pth, pref.srcDir as any, 'designer')[pref.srcDir];
+                    let _pthObj = PathBridge.Convert(pth, pref.srcDir as any, 'designer').paths[pref.srcDir];
                     let bothExist = nodeFn.fs.existsSync(_pthObj.code) && (nodeFn.fs.existsSync(_pthObj.html) || nodeFn.fs.existsSync(_pthObj.tsLayout));
                     if (!bothExist) {
                         console.log(`${_pthObj.designer} file deleted...`);
@@ -343,7 +349,7 @@ export class builder {
                 try {
                     let content = await DynamiccToHtml(outDynamicDesignFile);// new WrapperHelper(importUrl)
                     if (content != undefined) {
-                        let cinfo = PathBridge.Convert(outDynamicDesignFile, outDeclareKey as any, 'tsLayout', srcDeclareKey as any)[srcDeclareKey];
+                        let cinfo = PathBridge.Convert(outDynamicDesignFile, outDeclareKey as any, 'tsLayout', srcDeclareKey as any).paths[srcDeclareKey];
                         commonGenerator.ensureDirectoryExistence(cinfo["html"]);
                         nodeFn.fs.writeFileSync(cinfo["html"], content, 'binary');
                     }

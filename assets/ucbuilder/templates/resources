@@ -1,12 +1,19 @@
 import { BuildResource } from "ucbuilder/out/enumAndMore.js";
-
+declare module "ucbuilder/out/enumAndMore" {
+   export interface ResourceAliasRegistry{
+        <?php  
+             const onlyAlias = resources.filter(s => s.name && s.name != "");
+              for (const res of onlyAlias) { ?>
+            <?= res.name ?>: <?= res.source ?>,
+        <?php } ?>
+   }
+   export interface ResourceKeyRegistry {
+        <?php  for (const res of resources) { ?>
+            <?= res.guid ?>: <?= res.source ?>,
+        <?php } ?>
+   }
+}
 export const Resources:BuildResource[] = [
 <?php  for (const res of resources) { ?>
-    {
-        guid: <?= res.guid ?>,
-        type: "<?= res.type ?>",
-        source: <?= res.source ?>,
-        content: <?= res.content ?>,
-    }, 
-<?php } ?>
+    {   guid: <?= res.guid ?>,  <?php if(res.name && res.name!=''){ ?> name : <?= res.name ?>, <?php } ?>   type: "<?= res.type ?>",     content: <?= res.content ?>  }, <?php } ?>
 ];

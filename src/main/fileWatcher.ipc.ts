@@ -136,8 +136,8 @@ console.log(PathBridge.source);
                             if (unlinkPath.endsWith(codeExtension)) {
                                 if (unlinkPath.endsWith(`.uc${codeExtension}`) ||
                                     unlinkPath.endsWith(`.tpt${codeExtension}`)) {
-                                    let fromResult = PathBridge.Convert(unlinkPath, preference.srcDir as any, 'code');
-                                    let toResult = PathBridge.Convert(addedPath, preference.srcDir as any, 'code');
+                                    let fromResult = PathBridge.Convert(unlinkPath, preference.srcDir as any, 'code').paths;
+                                    let toResult = PathBridge.Convert(addedPath, preference.srcDir as any, 'code').paths;
                                     for (const [k, fromfile] of Object.entries(fromResult)) {
                                         if (fromfile.code != undefined)
                                             newAr.moved.push({ from: fromfile.code, to: toResult[k]?.code });

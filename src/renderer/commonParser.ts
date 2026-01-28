@@ -242,9 +242,9 @@ export class commonParser {
             if (element.hasAttribute("x-from")) {
                 // debugger;
                 let _sspath = ucUtil.devEsc(element.getAttribute("x-from"));
-                let _subpath = nodeFn.path.resolveFilePath(srcPathOf.html, _sspath);//["#toFilePath"]();
+                let _subpath = nodeFn.path.resolveFilePath(outPathOf.html, _sspath);//["#toFilePath"]();
                // if (_subpath == 'D:/projects/electronProjects/sharepnl/src/htmlFiles/renderer/util/controls/fixedWindow.uc.html') debugger;
-                console.log([_subpath]);
+                //console.log([_subpath,outPathOf.html]);
                     let uFInf = new codeFileInfo();
                 uFInf.parseUrl(_subpath, pref.outDir as any, outPathOf.html);
                 if (uFInf.pathOf == undefined) debugger;
@@ -254,10 +254,12 @@ export class commonParser {
                     ctr.nodeName = uFInf.name;
                     ctr.src = uFInf;
                     const uFpref = uFInf.projectInfo.config.preference;
-                    let fullcodePath = uFInf.allPathOf[uFpref.outDir].code;
-                    let nws = ucUtil.changeExtension(nodeFn.path.relativeFilePath(outPathOf.designer, fullcodePath), '.ts', '.js');
-                    ctr.codeFilePath = nws; //   oldone;
-                    console.log(ctr.codeFilePath);
+                    const uFprefOutdir = uFInf.allPathOf[uFpref.outDir];
+                    //let fullcodePath = uFInf.allPathOf[uFpref.outDir].code;
+                    //let nws = ucUtil.changeExtension(nodeFn.path.relativeFilePath(outPathOf.designer, fullcodePath), '.ts', '.js');
+                    //ctr.codeFilePath = nws; //   oldone;
+                    ctr.codeFilePath = nodeFn.path.relativeFilePath(outPathOf.designer,uFprefOutdir['code']);
+                    //console.log(ctr.codeFilePath);
                     
                     ctr.importedClassName = row.designer.importer.addImport([uFInf.name], ctr.codeFilePath)[0];
                     row.designer.controls.push(ctr);
